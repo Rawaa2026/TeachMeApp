@@ -114,6 +114,7 @@ public class DALAppWriteConnection {
         public String message;
         public T data;
         public String errorCode;
+        public Object customData;
         
         public OperationResult() {}
         
@@ -603,18 +604,36 @@ public class DALAppWriteConnection {
      * @return رسالة الخطأ أو "فشل غير محدد"
      */
     private String readErrorResponse(HttpURLConnection connection) {
+        int code = -1;
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-            StringBuilder errorMessage = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                errorMessage.append(line);
-            }
-            reader.close();
-            return errorMessage.toString();
-        } catch (Exception e) {
-            return "فشل غير محدد";
+            code = connection.getResponseCode();
+        } catch (Exception ignored) {
         }
+        StringBuilder body = new StringBuilder();
+        try {
+            InputStream err = connection.getErrorStream();
+            if (err == null) {
+                try {
+                    err = connection.getInputStream();
+                } catch (Exception ignored2) {
+                }
+            }
+            if (err != null) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(err))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        body.append(line);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "readErrorResponse stream", e);
+        }
+        String text = body.toString().trim();
+        if (!text.isEmpty()) {
+            return text;
+        }
+        return "HTTP " + code + " (لا يوجد جسم خطأ من الخادم)";
     }
     
     /**
@@ -815,11 +834,6 @@ public class DALAppWriteConnection {
      */
     public <T> OperationResult<ArrayList<T>> getData(String tableName, String collectionId, Class<T> classType) {
         try {
-            // التحقق من وجود الجدول
-            if (!tableExists(tableName, collectionId)) {
-                return new OperationResult<>(false, "الجدول غير موجود: " + tableName);
-            }
-            
             URL url = new URL(BASE_URL + "/databases/" + MAIN_DATABASE_ID + "/collections/" + 
                             (collectionId != null ? collectionId : tableName) + "/documents");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -828,9 +842,7 @@ public class DALAppWriteConnection {
             connection.setRequestProperty("X-Appwrite-Key", API_KEY);
             connection.setConnectTimeout(10000);
             connection.setReadTimeout(10000);
-            
             int responseCode = connection.getResponseCode();
-            
             if (responseCode == 200) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                 StringBuilder response = new StringBuilder();
@@ -839,18 +851,18 @@ public class DALAppWriteConnection {
                     response.append(line);
                 }
                 reader.close();
-                
-                // تحليل الاستجابة وتحويلها لكائنات Java
                 ArrayList<T> items = parseDocumentResponse(response.toString(), classType);
-                
                 return new OperationResult<>(true, "تم جلب البيانات بنجاح", items);
-                
-            } else {
-                String errorMessage = readErrorResponse(connection);
-                return new OperationResult<>(false, "فشل جلب البيانات: " + errorMessage);
             }
-            
+            String errorMessage = readErrorResponse(connection);
+            if (responseCode == 404 && errorMessage.contains("Collection not found")) {
+                if (createTable(tableName, collectionId, null)) {
+                    return getData(tableName, collectionId, classType);
+                }
+            }
+            return new OperationResult<>(false, "فشل جلب البيانات: " + errorMessage);
         } catch (Exception e) {
+            Log.e(TAG, "getData", e);
             return new OperationResult<>(false, "خطأ في جلب البيانات: " + e.getMessage());
         }
     }
@@ -891,7 +903,14 @@ public class DALAppWriteConnection {
             if (updateError == null) {
                 return new OperationResult<>(true, "تم التحديث بنجاح", data);
             } else {
-                Log.e(TAG, "فشل في تحديث المستند: " + updateError);
+                boolean missingDoc = updateError.contains("document_not_found")
+                        || updateError.contains("\"code\":404")
+                        || updateError.contains("could not be found");
+                if (missingDoc) {
+                    Log.d(TAG, "المستند غير موجود للتحديث: " + documentId);
+                } else {
+                    Log.e(TAG, "فشل في تحديث المستند: " + updateError);
+                }
                 return new OperationResult<>(false, "فشل في تحديث المستند: " + updateError);
             }
             
@@ -990,16 +1009,23 @@ public class DALAppWriteConnection {
                     response.append(line);
                 }
                 reader.close();
-                
-                // تحويل JSON لكائن Java
-                T item = gson.fromJson(response.toString(), classType);
-                
-                if (item != null) {
-                    return new OperationResult<>(true, "تم جلب العنصر بنجاح", item);
-                } else {
+                String responseStr = response.toString();
+                JsonObject documentJson = gson.fromJson(responseStr, JsonObject.class);
+                if (documentJson == null) {
                     return new OperationResult<>(false, "فشل في تحويل البيانات");
                 }
-                
+                T item = gson.fromJson(documentJson, classType);
+                if (item != null && documentJson.has("$id")) {
+                    try {
+                        java.lang.reflect.Field idField = classType.getField("id");
+                        idField.set(item, documentJson.get("$id").getAsString());
+                    } catch (Exception ignored) {
+                    }
+                }
+                if (item != null) {
+                    return new OperationResult<>(true, "تم جلب العنصر بنجاح", item);
+                }
+                return new OperationResult<>(false, "فشل في تحويل البيانات");
             } else {
                 String errorMessage = readErrorResponse(connection);
                 return new OperationResult<>(false, "فشل جلب العنصر: " + errorMessage);
@@ -1007,6 +1033,48 @@ public class DALAppWriteConnection {
             
         } catch (Exception e) {
             return new OperationResult<>(false, "خطأ في جلب العنصر: " + e.getMessage());
+        }
+    }
+
+    /**
+     * التحقق من وجود مستند (بدون تحليل JSON) — 200 يعني موجود.
+     */
+    public boolean documentExists(String tableName, String documentId, String collectionId) {
+        if (documentId == null || documentId.isEmpty()) {
+            return false;
+        }
+        HttpURLConnection connection = null;
+        try {
+            String collId = collectionId != null ? collectionId : tableName;
+            URL url = new URL(BASE_URL + "/databases/" + MAIN_DATABASE_ID + "/collections/" + collId
+                    + "/documents/" + documentId);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("X-Appwrite-Project", PROJECT_ID);
+            connection.setRequestProperty("X-Appwrite-Key", API_KEY);
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
+            int code = connection.getResponseCode();
+            InputStream body = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
+            if (body != null) {
+                try {
+                    byte[] buf = new byte[256];
+                    while (body.read(buf) != -1) { /* استهلاك الجسم لإغلاق الاتصال بأمان */ }
+                } catch (IOException ignored) {
+                } finally {
+                    try {
+                        body.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+            return code == 200;
+        } catch (Exception e) {
+            return false;
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
     
@@ -1247,18 +1315,66 @@ public class DALAppWriteConnection {
     }
 
     /**
+     * تحديث جزئي لمستند بحقول متوافقة مع الـ schema فقط (خريطة جاهزة).
+     */
+    public OperationResult<Void> patchDocumentData(String tableName, String collectionId, String documentId,
+                                                   Map<String, Object> data) {
+        if (documentId == null || documentId.isEmpty()) {
+            return new OperationResult<>(false, "معرف المستند لا يمكن أن يكون فارغاً");
+        }
+        if (data == null || data.isEmpty()) {
+            return new OperationResult<>(false, "لا توجد بيانات للتحديث");
+        }
+        String err = updateDocument(tableName, collectionId, documentId, data);
+        if (err == null) {
+            return new OperationResult<>(true, "تم التحديث بنجاح");
+        }
+        boolean missingDoc = err.contains("document_not_found")
+                || err.contains("\"code\":404")
+                || err.contains("could not be found");
+        if (missingDoc) {
+            Log.w(TAG, "patchDocumentData: المستند غير موجود documentId=" + documentId + " → " + err);
+        } else {
+            Log.e(TAG, "patchDocumentData documentId=" + documentId + " → " + err);
+        }
+        return new OperationResult<>(false, "فشل في تحديث المستند: " + err);
+    }
+
+    /**
+     * إنشاء مستند بمعرف محدد وحقل data فقط.
+     */
+    public OperationResult<Void> createDocumentWithData(String tableName, String collectionId, String documentId,
+                                                        Map<String, Object> data) {
+        if (documentId == null || documentId.isEmpty()) {
+            return new OperationResult<>(false, "معرف المستند لا يمكن أن يكون فارغاً");
+        }
+        Map<String, Object> doc = data != null ? new HashMap<>(data) : new HashMap<>();
+        String saveErr = saveDocumentOrError(tableName, collectionId, documentId, doc);
+        if (saveErr == null) {
+            return new OperationResult<>(true, "تم الحفظ بنجاح");
+        }
+        Log.e(TAG, "createDocumentWithData collection=" + (collectionId != null ? collectionId : tableName)
+                + " documentId=" + documentId + " → " + saveErr);
+        return new OperationResult<>(false, "فشل في حفظ المستند: " + saveErr);
+    }
+
+    /**
      * حفظ مستند في قاعدة البيانات
-     * @param tableName اسم الجدول
-     * @param collectionId معرف المجموعة (اختياري)
-     * @param documentId معرف المستند
-     * @param documentData بيانات المستند
      * @return true إذا تم الحفظ بنجاح، false إذا فشل
      */
     private boolean saveDocument(String tableName, String collectionId, String documentId, Map<String, Object> documentData) {
+        return saveDocumentOrError(tableName, collectionId, documentId, documentData) == null;
+    }
+
+    /**
+     * @return null عند النجاح، أو نص الخطأ من Appwrite/الشبكة
+     */
+    private String saveDocumentOrError(String tableName, String collectionId, String documentId, Map<String, Object> documentData) {
+        HttpURLConnection connection = null;
         try {
             URL url = new URL(BASE_URL + "/databases/" + MAIN_DATABASE_ID + "/collections/" + 
                             (collectionId != null ? collectionId : tableName) + "/documents");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("X-Appwrite-Project", PROJECT_ID);
@@ -1267,32 +1383,22 @@ public class DALAppWriteConnection {
             connection.setReadTimeout(10000);
             connection.setDoOutput(true);
             
-            // إنشاء طلب JSON بسيط يتجاهل schema attributes
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("documentId", documentId); // ID المستند
+            requestBody.put("documentId", documentId);
             
-            // حفظ البيانات مباشرة بدون schema validation
-            // تنظيف البيانات من أي حقول غير معرفة في schema
             Map<String, Object> cleanData = new HashMap<>();
-            
-            // نسخ البيانات الأساسية فقط (name, price, dateAdded, imageUrl, id)
             for (Map.Entry<String, Object> entry : documentData.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                
-                // تجاهل الحقول غير المطلوبة
                 if (key.equals("metadata") || key.equals("documentId") || 
                     key.equals("createdAt") || key.equals("createdBy") ||
                     key.equals("class") || key.equals("$") || key.equals("id")) {
-                    continue; // لا نضيف هذه الحقول (id تم تحويله مسبقاً)
+                    continue;
                 }
-                
-                // إضافة الحقول المهمة فقط
                 cleanData.put(key, value);
             }
             
             requestBody.put("data", cleanData);
-            
             String jsonBody = gson.toJson(requestBody);
             
             try (OutputStream os = connection.getOutputStream()) {
@@ -1302,19 +1408,28 @@ public class DALAppWriteConnection {
             int responseCode = connection.getResponseCode();
             
             if (responseCode >= 200 && responseCode < 300) {
-                return true;
-            } else {
-                String errorResponse = readErrorResponse(connection);
-                
-                // إصلاح schema errors: محاولة أخرى بدون schema validation
-                if (errorResponse.contains("Unknown attribute") || errorResponse.contains("document_invalid_structure")) {
-                    return saveWithoutSchemaValidation(tableName, collectionId, documentId, cleanData);
-                }
-                
-                return false;
+                return null;
             }
+            String errorResponse = readErrorResponse(connection);
+            Log.w(TAG, "saveDocument POST " + responseCode + " " + (collectionId != null ? collectionId : tableName)
+                    + "/" + documentId + " → " + errorResponse);
+            
+            if (errorResponse.contains("Unknown attribute") || errorResponse.contains("document_invalid_structure")) {
+                String retryErr = saveWithoutSchemaValidationOrError(tableName, collectionId, documentId, cleanData);
+                if (retryErr == null) {
+                    return null;
+                }
+                Log.e(TAG, "saveWithoutSchemaValidation failed: " + retryErr);
+                return retryErr;
+            }
+            return errorResponse;
         } catch (Exception e) {
-            return false;
+            Log.e(TAG, "saveDocumentOrError exception", e);
+            return e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
     
@@ -1332,11 +1447,13 @@ public class DALAppWriteConnection {
      * - dateAdded: datetime (required)
      * - imageUrl: string (optional)
      */
-    private boolean saveWithoutSchemaValidation(String tableName, String collectionId, String documentId, Map<String, Object> documentData) {
+    /** @return null عند النجاح، أو رسالة الخطأ */
+    private String saveWithoutSchemaValidationOrError(String tableName, String collectionId, String documentId, Map<String, Object> documentData) {
+        HttpURLConnection connection = null;
         try {
             URL url = new URL(BASE_URL + "/databases/" + MAIN_DATABASE_ID + "/collections/" + 
                             (collectionId != null ? collectionId : tableName) + "/documents");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("X-Appwrite-Project", PROJECT_ID);
@@ -1345,16 +1462,14 @@ public class DALAppWriteConnection {
             connection.setReadTimeout(10000);
             connection.setDoOutput(true);
             
-            // تنظيف إضافي: إزالة أي حقول غير مطلوبة
             Map<String, Object> cleanData = new HashMap<>(documentData);
             cleanData.remove("metadata");
             cleanData.remove("documentId");
             cleanData.remove("createdAt");
             cleanData.remove("createdBy");
             
-            // طلب JSON مبسط جداً - يجب تضمين documentId
             Map<String, Object> simpleRequest = new HashMap<>();
-            simpleRequest.put("documentId", documentId); // إضافة documentId
+            simpleRequest.put("documentId", documentId);
             simpleRequest.put("data", cleanData);
             
             String jsonBody = gson.toJson(simpleRequest);
@@ -1366,13 +1481,18 @@ public class DALAppWriteConnection {
             int responseCode = connection.getResponseCode();
             
             if (responseCode >= 200 && responseCode < 300) {
-                return true;
-            } else {
-                String errorResponse = readErrorResponse(connection);
-                return false;
+                return null;
             }
+            String errorResponse = readErrorResponse(connection);
+            Log.w(TAG, "saveWithoutSchemaValidation POST " + responseCode + " → " + errorResponse);
+            return errorResponse;
         } catch (Exception e) {
-            return false;
+            Log.e(TAG, "saveWithoutSchemaValidationOrError", e);
+            return e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
     
@@ -1436,6 +1556,18 @@ public class DALAppWriteConnection {
                         T item = gson.fromJson(documentJson, classType);
                         
                         if (item != null) {
+                            // وضع $id في حقل id
+                            if (documentJson.has("$id")) {
+                                try {
+                                    java.lang.reflect.Field idField = classType.getField("id");
+                                    if (idField != null) {
+                                        idField.set(item, documentJson.get("$id").getAsString());
+                                    }
+                                } catch (Exception e) {
+                                    // ignore
+                                }
+                            }
+                            
                             items.add(item);
                         }
                     } catch (Exception e) {

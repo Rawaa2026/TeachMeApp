@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorPrimaryContainer"
+    android:elevation="0dp"
+    android:paddingTop="@dimen/status_bar_height"
+    android:layoutDirection="rtl">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/header_logo"
+        android:layout_width="@dimen/header_logo_size"
+        android:layout_height="@dimen/header_logo_size"
+        android:layout_marginStart="@dimen/header_padding_horizontal"
+        android:layout_marginTop="@dimen/header_padding_vertical"
+        android:layout_marginBottom="@dimen/header_padding_vertical"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/ic_teachme_logo_small"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/header_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/header_logo_margin_end"
+        android:layout_marginEnd="@dimen/header_padding_horizontal"
+        android:ellipsize="end"
+        android:gravity="start|center_vertical"
+        android:maxLines="1"
+        android:text="@string/app_name"
+        android:textColor="?attr/colorOnPrimaryContainer"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/header_action_btn"
+        app:layout_constraintStart_toEndOf="@id/header_logo"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Optional action button (can be hidden) -->
+    <ImageButton
+        android:id="@+id/header_action_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="@dimen/header_padding_horizontal"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/settings"
+        android:src="@android:drawable/ic_menu_preferences"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

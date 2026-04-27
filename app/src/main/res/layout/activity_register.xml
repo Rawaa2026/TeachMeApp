@@ -1,118 +1,196 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:fillViewport="true"
+    android:fitsSystemWindows="true"
+    android:layoutDirection="rtl">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar_register"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/surface"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:logo="@drawable/ic_teachme_logo_small"
-        app:title="@string/register"
-        app:titleTextColor="@color/text_primary" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/content_padding">
 
-    <ScrollView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_register">
+        <!-- Custom Header -->
+        <include
+            android:id="@+id/header_register"
+            layout="@layout/custom_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
-
+        <!-- Role Selection -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="@dimen/content_margin_vertical"
             android:text="@string/register_as"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="@dimen/content_margin_vertical"
+            android:orientation="horizontal"
+            android:weightSum="2">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_teacher"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/border"
-                app:strokeWidth="1dp">
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="4dp"
+                app:strokeWidth="@dimen/stroke_selected"
+                app:strokeColor="@android:color/transparent"
+                android:foreground="?android:attr/selectableItemBackground">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="@string/teacher"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/teacher"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_student"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                app:cardBackgroundColor="@color/surface"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/border"
-                app:strokeWidth="1dp">
+                android:layout_weight="1"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="4dp"
+                app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent"
+                android:foreground="?android:attr/selectableItemBackground">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="@string/student"
-                    android:textColor="@color/text_primary"
-                    android:textSize="15sp" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/student"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
+        <!-- Basic Information -->
         <EditText
             android:id="@+id/register_full_name"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="@dimen/content_margin_vertical"
             android:background="@drawable/bg_edittext"
             android:hint="@string/full_name_hint"
             android:inputType="textPersonName"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:paddingStart="@dimen/edittext_padding_start"
+            android:paddingEnd="@dimen/edittext_padding_end"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/hint" />
+
+        <EditText
+            android:id="@+id/register_phone"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/content_margin_vertical"
+            android:background="@drawable/bg_edittext"
+            android:hint="@string/phone_hint"
+            android:inputType="phone"
+            android:paddingStart="@dimen/edittext_padding_start"
+            android:paddingEnd="@dimen/edittext_padding_end"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/hint" />
+
+        <LinearLayout
+            android:id="@+id/register_student_birth_block"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/content_margin_vertical"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:text="@string/birth_date"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <Spinner
+                    android:id="@+id/register_birth_day"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_edittext" />
+
+                <Spinner
+                    android:id="@+id/register_birth_month"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_edittext" />
+
+                <Spinner
+                    android:id="@+id/register_birth_year"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_edittext" />
+            </LinearLayout>
+        </LinearLayout>
 
         <EditText
             android:id="@+id/register_email"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/content_margin_vertical"
             android:background="@drawable/bg_edittext"
             android:hint="@string/email"
             android:inputType="textEmailAddress"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:paddingStart="@dimen/edittext_padding_start"
+            android:paddingEnd="@dimen/edittext_padding_end"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/hint" />
 
@@ -120,141 +198,59 @@
             android:id="@+id/register_password"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/content_margin_vertical"
             android:background="@drawable/bg_edittext"
             android:hint="@string/password"
             android:inputType="textPassword"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:paddingStart="@dimen/edittext_padding_start"
+            android:paddingEnd="@dimen/edittext_padding_end"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/hint" />
-
-        <!-- الصورة الشخصية -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/photo"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp" />
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp">
-
-            <ImageView
-                android:id="@+id/register_photo"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="start"
-                android:background="@drawable/bg_edittext"
-                android:contentDescription="@string/photo"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
-            <TextView
-                android:id="@+id/register_add_photo_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:padding="24dp"
-                android:text="@string/add_photo"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
-
-            <View
-                android:id="@+id/register_photo_click_area"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="start"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true" />
-        </FrameLayout>
 
         <EditText
-            android:id="@+id/register_description"
+            android:id="@+id/register_confirm_password"
             android:layout_width="match_parent"
-            android:layout_height="96dp"
-            android:layout_marginTop="20dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/content_margin_vertical"
             android:background="@drawable/bg_edittext"
-            android:gravity="top|start"
-            android:hint="@string/description_hint_teacher"
-            android:inputType="textMultiLine"
-            android:paddingStart="16dp"
-            android:paddingTop="12dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="12dp"
+            android:hint="@string/confirm_password"
+            android:inputType="textPassword"
+            android:paddingStart="@dimen/edittext_padding_start"
+            android:paddingEnd="@dimen/edittext_padding_end"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/hint" />
-
-        <!-- تاريخ الميلاد (للطالب فقط) -->
-        <LinearLayout
-            android:id="@+id/register_birth_date_section"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="@string/birth_date"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/register_birth_date"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_edittext"
-                android:hint="@string/birth_date_hint"
-                android:inputType="date"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/hint" />
-        </LinearLayout>
 
         <Button
             android:id="@+id/register_continue_btn"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:layout_marginTop="28dp"
-            android:layout_marginBottom="24dp"
-            android:backgroundTint="@color/text_primary"
+            android:layout_marginTop="@dimen/content_margin_vertical"
+            android:layout_marginBottom="@dimen/content_margin_vertical"
             android:text="@string/continue_btn"
             android:textColor="@color/white" />
 
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="24dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="@dimen/content_margin_vertical"
+            android:text="@string/have_account"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/have_account"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+        <TextView
+            android:id="@+id/register_go_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="4dp"
+            android:text="@string/login_here"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackground" />
 
-            <TextView
-                android:id="@+id/register_go_login"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:text="@string/login_here"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
     </LinearLayout>
 </ScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>

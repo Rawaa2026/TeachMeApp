@@ -3,14 +3,48 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- ألوان هادئة بسيطة -->
-    <color name="background">#F5F5F2</color>
+    <!-- خلفيات عامة -->
+    <color name="background">#F5F7FA</color>
     <color name="surface">#FFFFFF</color>
-    <color name="text_primary">#2D2D2D</color>
-    <color name="text_secondary">#6B6B6B</color>
-    <color name="border">#E2E2DE</color>
-    <color name="nav_unselected">#9E9E9A</color>
-    <color name="nav_selected">#2D2D2D</color>
-    <color name="hint">#9E9E9A</color>
-    <color name="divider">#EEEEEC</color>
+    <color name="text_primary">#1E293B</color>
+    <color name="text_secondary">#64748B</color>
+    <color name="border">#E2E8F0</color>
+    <color name="nav_unselected">#94A3B8</color>
+    <color name="hint">#94A3B8</color>
+    <color name="divider">#EEF2F7</color>
+
+    <!-- هوية محايدة (تسجيل الدخول / التسجيل قبل الدور) -->
+    <color name="brand_neutral">#475569</color>
+    <color name="brand_neutral_dark">#334155</color>
+    <color name="brand_neutral_light">#E2E8F0</color>
+
+    <!-- معلم — أزرق تعليمي -->
+    <color name="brand_teacher">#1565C0</color>
+    <color name="brand_teacher_dark">#0D47A1</color>
+    <color name="brand_teacher_light">#E3F2FD</color>
+    <color name="brand_teacher_container">#BBDEFB</color>
+
+    <!-- طالب — أخضر تعليمي -->
+    <color name="brand_student">#2E7D32</color>
+    <color name="brand_student_dark">#1B5E20</color>
+    <color name="brand_student_light">#E8F5E9</color>
+    <color name="brand_student_container">#C8E6C9</color>
+
+    <!-- متوافق مع الشاشات القديمة التي تستخدم @color/primary -->
+    <color name="primary">@color/brand_neutral</color>
+
+    <color name="nav_selected">@color/brand_neutral</color>
+
+    <!-- تمييز البروفايل والبطاقات (نفس هوية الدور) -->
+    <color name="profile_teacher_accent">@color/brand_teacher</color>
+    <color name="profile_student_accent">@color/brand_student</color>
+
+    <!-- جدول / قائمة الدروس -->
+    <color name="home_schedule_outer_card">#D8E6F5</color>
+    <color name="home_schedule_list_background">#E8EFF8</color>
+    <color name="home_schedule_card_fill">#FFFFFF</color>
+    <color name="home_schedule_card_stroke">#CFD8E6</color>
+    <color name="home_schedule_today_card_fill">#FFF4E6</color>
+    <color name="home_schedule_today_stroke">#E65100</color>
+    <color name="home_schedule_today_badge_text">#BF360C</color>
 </resources>

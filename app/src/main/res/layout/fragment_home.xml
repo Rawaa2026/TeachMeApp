@@ -1,45 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:layoutDirection="rtl">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/safe_area_margin_vertical"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="@dimen/content_padding">
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_teachme_logo_small" />
+            android:src="@drawable/ic_teachme_logo" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/nav_home"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center"
+            android:text="@string/home_welcome"
             android:textColor="@color/text_primary"
-            android:textSize="22sp"
-            tools:ignore="HardcodedText" />
+            android:textSize="18sp" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
             android:background="@color/divider" />
 
         <TextView
+            android:id="@+id/home_schedule_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/home_schedule_title"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="@color/text_primary" />
+
+        <ProgressBar
+            android:id="@+id/home_schedule_progress"
+            style="?android:attr/progressBarStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/home_welcome"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/home_schedule_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="@string/home_schedule_empty"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
             android:textColor="@color/text_secondary"
-            android:textSize="15sp"
-            android:lineSpacingExtra="4dp" />
+            android:visibility="gone" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/home_schedule_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/home_schedule_outer_card"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/home_schedule_card_stroke"
+            app:strokeWidth="1dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/home_schedule_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never"
+                android:paddingStart="12dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp"
+                tools:listitem="@layout/item_home_schedule_lesson" />
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </ScrollView>

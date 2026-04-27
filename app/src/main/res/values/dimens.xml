@@ -1,4 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Spacing and margins -->
     <dimen name="stroke_selected">2dp</dimen>
+    
+    <!-- Header dimensions -->
+    <dimen name="header_height">56dp</dimen>
+    <dimen name="header_padding_horizontal">16dp</dimen>
+    <dimen name="header_padding_vertical">8dp</dimen>
+    <dimen name="header_logo_size">32dp</dimen>
+    <dimen name="header_logo_margin_end">12dp</dimen>
+    
+    <!-- Safe area margins -->
+    <dimen name="safe_area_margin_horizontal">16dp</dimen>
+    <dimen name="safe_area_margin_vertical">8dp</dimen>
+    <dimen name="status_bar_height">24dp</dimen>
+    
+    <!-- Content spacing -->
+    <dimen name="content_padding">20dp</dimen>
+    <dimen name="content_margin_vertical">12dp</dimen>
+    <dimen name="profile_photo_action_height">36dp</dimen>
+    <dimen name="profile_photo_action_padding_h">12dp</dimen>
+    <dimen name="scroll_screen_padding_h">12dp</dimen>
+    <dimen name="screen_content_card_radius">16dp</dimen>
+    <dimen name="screen_content_card_padding">18dp</dimen>
+    
+    <!-- Card and button dimensions -->
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="button_corner_radius">8dp</dimen>
+    
+    <!-- RTL support - start/end margins instead of left/right -->
+    <dimen name="content_margin_start">16dp</dimen>
+    <dimen name="content_margin_end">16dp</dimen>
+    <dimen name="edittext_padding_start">16dp</dimen>
+    <dimen name="edittext_padding_end">16dp</dimen>
+    
+    <!-- Additional safe area dimensions -->
+    <dimen name="safe_area_horizontal">16dp</dimen>
+    <dimen name="safe_area_vertical">8dp</dimen>
+    <dimen name="safe_area_top">24dp</dimen>
+    <dimen name="safe_area_bottom">16dp</dimen>
+
+    <dimen name="home_schedule_card_padding_h">16dp</dimen>
+    <dimen name="home_schedule_card_padding_v">14dp</dimen>
 </resources>

@@ -1,207 +1,511 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    android:fillViewport="true">
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:layoutDirection="rtl"
+    android:overScrollMode="ifContentScrolls"
+    android:paddingStart="@dimen/scroll_screen_padding_h"
+    android:paddingTop="8dp"
+    android:paddingEnd="@dimen/scroll_screen_padding_h"
+    android:paddingBottom="16dp"
+    android:scrollbars="none">
 
     <LinearLayout
+        android:id="@+id/profile_main_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/background"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="@dimen/screen_content_card_padding">
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal">
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp">
 
             <ImageView
                 android:id="@+id/profile_photo"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:layout_gravity="center_horizontal"
-                android:background="@drawable/bg_edittext"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/photo"
                 android:scaleType="centerCrop"
-                android:visibility="gone"
-                tools:visibility="visible" />
-
-            <View
-                android:id="@+id/profile_photo_placeholder"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/bg_edittext"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                tools:src="@drawable/ic_teachme_logo_small" />
 
             <TextView
                 android:id="@+id/profile_photo_add_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:padding="24dp"
+                android:padding="30dp"
                 android:text="@string/add_photo"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="16sp"
+                android:visibility="gone"
+                tools:visibility="gone" />
 
             <View
                 android:id="@+id/profile_photo_click"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:layout_gravity="center_horizontal"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
                 android:focusable="true" />
         </FrameLayout>
 
-        <TextView
-            android:id="@+id/profile_change_photo_hint"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="4dp"
-            android:text="@string/change_photo"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:layout_marginBottom="4dp"
+            android:gravity="center"
+            android:orientation="vertical">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="12dp"
-            android:background="@color/divider" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:text="@string/change_photo"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/full_name"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
-        <TextView
-            android:id="@+id/profile_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            tools:text="أحمد محمد" />
-        <EditText
-            android:id="@+id/profile_name_edit"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/bg_edittext"
-            android:hint="@string/full_name_hint"
-            android:inputType="textPersonName"
-            android:padding="12dp"
-            android:textColor="@color/text_primary"
-            android:visibility="gone"
-            tools:visibility="gone" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/email"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
-        <TextView
-            android:id="@+id/profile_email"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            tools:text="user@example.com" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/profile_pick_gallery_btn"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/profile_photo_action_height"
+                    android:layout_marginEnd="6dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingStart="@dimen/profile_photo_action_padding_h"
+                    android:paddingEnd="@dimen/profile_photo_action_padding_h"
+                    android:text="@string/photo_from_gallery"
+                    android:textSize="12sp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/description"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
-        <TextView
-            android:id="@+id/profile_description"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp"
-            android:visibility="visible"
-            tools:text="نبذة عني"
-            tools:visibility="visible" />
-        <EditText
-            android:id="@+id/profile_description_edit"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:background="@drawable/bg_edittext"
-            android:gravity="top|start"
-            android:inputType="textMultiLine"
-            android:padding="12dp"
-            android:textColor="@color/text_primary"
-            android:textColorHint="@color/hint"
-            android:visibility="gone"
-            tools:visibility="gone" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/profile_pick_camera_btn"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/profile_photo_action_height"
+                    android:layout_marginStart="6dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingStart="@dimen/profile_photo_action_padding_h"
+                    android:paddingEnd="@dimen/profile_photo_action_padding_h"
+                    android:text="@string/photo_from_camera"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
 
+        <!-- الاسم الكامل -->
         <LinearLayout
-            android:id="@+id/profile_birth_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/full_name"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+            
+            <TextView
+                android:id="@+id/profile_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="0dp"
+                android:background="@android:color/transparent"
+                tools:text="أحمد محمد" />
+
+        </LinearLayout>
+
+        <!-- البريد الإلكتروني -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/email"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+            
+            <TextView
+                android:id="@+id/profile_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="0dp"
+                android:background="@android:color/transparent"
+                tools:text="user@example.com" />
+
+        </LinearLayout>
+
+        <!-- رقم الهاتف -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/phone"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+            
+            <TextView
+                android:id="@+id/profile_phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="0dp"
+                android:background="@android:color/transparent"
+                tools:text="05xxxxxxxx" />
+
+        </LinearLayout>
+
+        <!-- نوع المستخدم -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="نوع المستخدم"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+            
+            <TextView
+                android:id="@+id/profile_role"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="0dp"
+                android:background="@android:color/transparent"
+                tools:text="معلم" />
+
+        </LinearLayout>
+
+        <!-- مجموع تكلفة الدروس (اليوم / الكل) -->
+        <LinearLayout
+            android:id="@+id/profile_lessons_cost_block"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:orientation="vertical"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_lessons_cost_title"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <ProgressBar
+                android:id="@+id/profile_lessons_cost_progress"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/profile_lessons_cost_today"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="دروس اليوم: 0" />
+
+            <TextView
+                android:id="@+id/profile_lessons_cost_total"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="كل الدروس: 0" />
+        </LinearLayout>
+
+        <!-- تفاصيل المعلم (من الجلسة؛ المستند السحابي قد لا يتضمنها) -->
+        <LinearLayout
+            android:id="@+id/profile_teacher_extra"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone"
             tools:visibility="visible">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/birth_date"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_subjects"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="14sp" />
+
             <TextView
-                android:id="@+id/profile_birth_date"
+                android:id="@+id/profile_teacher_subjects"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="الرياضيات، العلوم" />
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                tools:text="2005-03-15" />
-            <EditText
-                android:id="@+id/profile_birth_date_edit"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_experience"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/profile_teacher_experience"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/bg_edittext"
-                android:hint="@string/birth_date_hint"
-                android:inputType="date"
-                android:padding="12dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
                 android:textColor="@color/text_primary"
-                android:visibility="gone"
-                tools:visibility="gone" />
+                android:textSize="16sp"
+                tools:text="5 سنوات" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_hourly"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/profile_teacher_hourly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="150" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_bio"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/profile_teacher_bio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="نبذة" />
+        </LinearLayout>
+
+        <!-- تفاصيل الطالب -->
+        <LinearLayout
+            android:id="@+id/profile_student_extra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_birth"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/profile_student_birth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="2010-05-01" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_grade"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/profile_student_grade"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="الخامس" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_school"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/profile_student_school"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                tools:text="مدرسة" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/profile_section_bio"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/profile_student_bio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- تاريخ إنشاء الحساب -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="تاريخ إنشاء الحساب"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+            
+            <TextView
+                android:id="@+id/profile_created_at"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="0dp"
+                android:background="@android:color/transparent"
+                tools:text="2024-03-31" />
+
+        </LinearLayout>
+
+        <!-- آخر تحديث -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="آخر تحديث"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+            
+            <TextView
+                android:id="@+id/profile_updated_at"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="0dp"
+                android:background="@android:color/transparent"
+                tools:text="2024-03-31" />
+
         </LinearLayout>
 
         <Button
             android:id="@+id/profile_edit_btn"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@color/text_primary"
+            android:layout_height="56dp"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="?attr/colorPrimary"
             android:text="@string/edit_profile"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <Button
-            android:id="@+id/profile_save_btn"
+            android:id="@+id/profile_logout_btn"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="@color/text_primary"
-            android:text="@string/save"
+            android:layout_height="56dp"
+            android:layout_marginBottom="4dp"
+            android:backgroundTint="@android:color/holo_red_dark"
+            android:text="تسجيل الخروج"
             android:textColor="@color/white"
-            android:visibility="gone"
-            tools:visibility="gone" />
+            android:textSize="16sp"
+            android:textStyle="bold" />
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

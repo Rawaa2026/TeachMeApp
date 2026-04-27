@@ -1,7 +1,50 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.RawaaProject" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+    <style name="Platform.RawaaProject" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowBackground">#121212</item>
+        <item name="android:navigationBarColor">#1E1E1E</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Base.Theme.RawaaProject" parent="Platform.RawaaProject">
+        <item name="colorPrimary">@color/brand_neutral</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">#334155</item>
+        <item name="colorOnPrimaryContainer">#E2E8F0</item>
+        <item name="colorSecondary">#94A3B8</item>
+        <item name="colorOnSecondary">#0F172A</item>
+        <item name="android:statusBarColor">#1E1E1E</item>
+    </style>
+
+    <style name="Theme.RawaaProject" parent="Base.Theme.RawaaProject" />
+
+    <style name="Theme.RawaaProject.Teacher" parent="Base.Theme.RawaaProject">
+        <item name="colorPrimary">#42A5F5</item>
+        <item name="colorOnPrimary">#0D1B2A</item>
+        <item name="colorPrimaryContainer">#1565C0</item>
+        <item name="colorOnPrimaryContainer">#E3F2FD</item>
+        <item name="colorSecondary">#90CAF9</item>
+        <item name="colorOnSecondary">#0D1B2A</item>
+        <item name="colorSecondaryContainer">#0D47A1</item>
+        <item name="colorOnSecondaryContainer">#E3F2FD</item>
+        <item name="android:statusBarColor">#1E3A5F</item>
+    </style>
+
+    <style name="Theme.RawaaProject.Student" parent="Base.Theme.RawaaProject">
+        <item name="colorPrimary">#66BB6A</item>
+        <item name="colorOnPrimary">#0D1F12</item>
+        <item name="colorPrimaryContainer">#2E7D32</item>
+        <item name="colorOnPrimaryContainer">#E8F5E9</item>
+        <item name="colorSecondary">#A5D6A7</item>
+        <item name="colorOnSecondary">#0D1F12</item>
+        <item name="colorSecondaryContainer">#1B5E20</item>
+        <item name="colorOnSecondaryContainer">#E8F5E9</item>
+        <item name="android:statusBarColor">#1B3D24</item>
+    </style>
+
+    <style name="Theme.RawaaProject.Splash" parent="Theme.RawaaProject">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
     </style>
 </resources>

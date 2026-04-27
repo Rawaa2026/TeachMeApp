@@ -1,13 +1,52 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Base.Theme.RawaaProject" parent="Theme.Material3.Light.NoActionBar">
-        <item name="colorPrimary">@color/text_primary</item>
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="android:statusBarColor">@color/surface</item>
-        <item name="android:navigationBarColor">@color/surface</item>
+
+    <style name="Platform.RawaaProject" parent="Theme.Material3.Light.NoActionBar">
         <item name="android:windowBackground">@color/background</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
+
+    <!-- ثيم مشترك: ألوان أساسية محايدة (شاشة الدخول والتسجيل) -->
+    <style name="Base.Theme.RawaaProject" parent="Platform.RawaaProject">
+        <item name="colorPrimary">@color/brand_neutral</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_neutral_light</item>
+        <item name="colorOnPrimaryContainer">@color/brand_neutral_dark</item>
+        <item name="colorSecondary">@color/brand_neutral_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/brand_neutral_light</item>
+        <item name="colorOnSecondaryContainer">@color/brand_neutral_dark</item>
+        <item name="android:statusBarColor">@color/brand_neutral_light</item>
+    </style>
+
     <style name="Theme.RawaaProject" parent="Base.Theme.RawaaProject" />
+
+    <!-- معلم: أزرق ومشتقاته -->
+    <style name="Theme.RawaaProject.Teacher" parent="Base.Theme.RawaaProject">
+        <item name="colorPrimary">@color/brand_teacher</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_teacher_light</item>
+        <item name="colorOnPrimaryContainer">@color/brand_teacher_dark</item>
+        <item name="colorSecondary">@color/brand_teacher_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/brand_teacher_container</item>
+        <item name="colorOnSecondaryContainer">@color/brand_teacher_dark</item>
+        <item name="android:statusBarColor">@color/brand_teacher_light</item>
+    </style>
+
+    <!-- طالب: أخضر ومشتقاته -->
+    <style name="Theme.RawaaProject.Student" parent="Base.Theme.RawaaProject">
+        <item name="colorPrimary">@color/brand_student</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_student_light</item>
+        <item name="colorOnPrimaryContainer">@color/brand_student_dark</item>
+        <item name="colorSecondary">@color/brand_student_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/brand_student_container</item>
+        <item name="colorOnSecondaryContainer">@color/brand_student_dark</item>
+        <item name="android:statusBarColor">@color/brand_student_light</item>
+    </style>
 
     <style name="Theme.RawaaProject.Splash" parent="Theme.RawaaProject">
         <item name="android:windowFullscreen">true</item>

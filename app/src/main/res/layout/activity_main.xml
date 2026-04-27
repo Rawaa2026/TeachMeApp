@@ -6,40 +6,49 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
+    android:fitsSystemWindows="true"
+    android:layoutDirection="rtl"
     tools:context=".MainActivity">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar_main"
+    <!-- Custom Header -->
+    <include
+        android:id="@+id/header_main"
+        layout="@layout/custom_header"
         android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/surface"
-        android:elevation="2dp"
+        android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:logo="@drawable/ic_teachme_logo_small"
-        app:titleTextColor="@color/text_primary" />
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Content Frame with safe margins -->
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginStart="@dimen/safe_area_margin_horizontal"
+        android:layout_marginEnd="@dimen/safe_area_margin_horizontal"
+        android:layout_marginTop="@dimen/safe_area_margin_vertical"
         app:layout_constraintBottom_toTopOf="@id/bottom_nav"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_main" />
+        app:layout_constraintTop_toBottomOf="@id/header_main" />
 
+    <!-- Bottom Navigation with safe area -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/safe_area_margin_horizontal"
+        android:layout_marginEnd="@dimen/safe_area_margin_horizontal"
+        android:layout_marginBottom="@dimen/safe_area_margin_vertical"
         android:background="@color/surface"
+        android:elevation="8dp"
+        app:cornerRadius="@dimen/card_corner_radius"
         app:itemIconTint="@color/nav_item_color"
         app:itemTextColor="@color/nav_item_color"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

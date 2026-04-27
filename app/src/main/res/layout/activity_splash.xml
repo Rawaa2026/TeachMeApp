@@ -5,25 +5,30 @@
     android:layout_height="match_parent"
     android:background="@color/background"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:fitsSystemWindows="true"
+    android:layoutDirection="rtl">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_marginStart="@dimen/safe_area_horizontal"
+        android:layout_marginEnd="@dimen/safe_area_horizontal"
+        android:layout_marginTop="@dimen/safe_area_top"
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
         <ImageView
             android:id="@+id/splash_logo"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:contentDescription="@string/app_name"
             android:src="@drawable/ic_teachme_logo" />
 
         <TextView
             android:id="@+id/splash_app_name"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/content_margin_vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
@@ -36,7 +41,7 @@
             android:id="@+id/splash_tagline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="@dimen/safe_area_top"
             android:text="@string/splash_tagline"
             android:textColor="@color/text_secondary"
             android:textSize="14sp"

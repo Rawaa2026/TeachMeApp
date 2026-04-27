@@ -5,32 +5,45 @@
     android:layout_height="match_parent"
     android:background="@color/background"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="@dimen/content_padding"
+    android:layoutDirection="rtl"
+    android:layout_marginTop="@dimen/safe_area_margin_vertical">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/nav_search"
         android:textColor="@color/text_primary"
-        android:textSize="22sp" />
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginTop="@dimen/content_margin_vertical"
+        android:layout_marginBottom="@dimen/content_margin_vertical"
         android:background="@color/divider" />
 
-        <EditText
-            android:id="@+id/search_input"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="@drawable/bg_edittext"
-            android:gravity="start|center_vertical"
-            android:hint="بحث عن مدرس أو مادة"
+    <EditText
+        android:id="@+id/search_input"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="@dimen/content_margin_vertical"
+        android:background="@drawable/bg_edittext"
+        android:hint="ابحث عن معلمين أو مواد..."
         android:inputType="text"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="@dimen/edittext_padding_start"
+        android:paddingEnd="@dimen/edittext_padding_end"
         android:textColor="@color/text_primary"
         android:textColorHint="@color/hint" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="البحث قيد التطوير..."
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp"
+        android:layout_gravity="center_horizontal" />
+
 </LinearLayout>

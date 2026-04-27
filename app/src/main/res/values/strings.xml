@@ -2,6 +2,12 @@
     <string name="app_name">TeachMeApp</string>
     <string name="splash_tagline">منصة الدروس الخصوصية</string>
     <string name="home_welcome">مرحباً بك في TeachMeApp للدروس الخصوصية.</string>
+    <string name="home_schedule_title">جدول الدروس</string>
+    <string name="home_schedule_empty">لا توجد دروس مسجّلة في جدولك حالياً</string>
+    <string name="home_col_subject">المادة</string>
+    <string name="home_col_topic">موضوع الدرس</string>
+    <string name="home_col_when">الموعد</string>
+    <string name="home_col_teacher">المعلّم</string>
 
     <!-- تنقل سفلي -->
     <string name="nav_home">الرئيسية</string>
@@ -13,6 +19,7 @@
     <string name="login">تسجيل الدخول</string>
     <string name="email">البريد الإلكتروني</string>
     <string name="password">كلمة المرور</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
     <string name="login_btn">دخول</string>
     <string name="no_account">ليس لديك حساب؟</string>
     <string name="register_here">سجّل من هنا</string>
@@ -27,15 +34,69 @@
     <string name="photo">الصورة الشخصية</string>
     <string name="add_photo">إضافة صورة</string>
     <string name="description">نبذة عنك</string>
-    <string name="description_hint_teacher">نبذة مختصرة وخبراتك</string>
-    <string name="description_hint_student">الصف أو المرحلة والمواد التي تريد دروساً فيها</string>
+    <string name="description_hint_teacher">نبذة عنك (اختياري)</string>
+    <string name="description_hint_student">نبذة عنك (اختياري)</string>
+    <string name="select_subjects">اختر المواد</string>
+    <string name="experience_prompt">سنوات الخبرة</string>
+    <string name="grade_prompt">اختر الصف</string>
+    <string name="selected_subjects_summary">تم اختيار %1$d مادة</string>
+    <string name="specialization_required">اختر مادة واحدة على الأقل للتخصص</string>
+    <string name="experience_required">اختر سنوات الخبرة</string>
+    <string name="grade_required">اختر الصف الدراسي</string>
     <string name="birth_date">تاريخ الميلاد</string>
     <string name="birth_date_hint">يوم / شهر / سنة</string>
     <string name="continue_btn">متابعة</string>
     <string name="have_account">لديك حساب؟</string>
     <string name="login_here">سجّل الدخول من هنا</string>
     <string name="password_min_length">كلمة المرور 6 أحرف على الأقل</string>
+    <string name="password_mismatch">كلمتا المرور غير متطابقتين</string>
     <string name="register_failed">فشل التسجيل</string>
+    
+    <!-- بيانات إضافية -->
+    <string name="phone">رقم الهاتف</string>
+    <string name="phone_hint">أدخل رقم الهاتف</string>
+    <string name="specialization">التخصص</string>
+    <string name="specialization_hint">مثال: الرياضيات، الفيزياء، اللغة العربية</string>
+    <string name="experience">الخبرة</string>
+    <string name="experience_hint">عدد سنوات الخبرة</string>
+    <string name="grade">الصف الدراسي</string>
+    <string name="grade_hint">مثال: الأول الثانوي، الثاني الإعدادي</string>
+    <string name="school">المدرسة</string>
+    <string name="school_hint">اسم المدرسة</string>
+    <string name="subjects_needed">المواد المطلوبة</string>
+    <string name="subjects_needed_hint">المواد التي تحتاجها</string>
+    <string name="hourly_rate_hint">السعر بالساعة</string>
+    <string name="hourly_rate">السعر بالساعة</string>
+    
+    <!-- المواد الدراسية للمعلمين -->
+    <string-array name="teacher_subjects">
+        <item>الرياضيات</item>
+        <item>الفيزياء</item>
+        <item>الكيمياء</item>
+        <item>الأحياء</item>
+        <item>اللغة العربية</item>
+        <item>اللغة الإنجليزية</item>
+        <item>اللغة الفرنسية</item>
+        <item>التاريخ</item>
+        <item>الجغرافيا</item>
+        <item>الفلسفة</item>
+        <item>الاقتصاد</item>
+        <item>العلوم الشرعية</item>
+        <item>التربية الإسلامية</item>
+        <item>العلوم</item>
+        <item>الحاسوب</item>
+        <item>الفنون</item>
+        <item>التربية البدنية</item>
+        <item>الموسيقى</item>
+        <item>اللغة الألمانية</item>
+        <item>اللغة الإسبانية</item>
+        <item>اللغة الصينية</item>
+        <item>الإحصاء</item>
+        <item>المحاسبة</item>
+        <item>الهندسة</item>
+    </string-array>
+    <string name="qualification">المؤهلات</string>
+    <string name="qualification_hint">الشهادات والمؤهلات</string>
 
     <!-- حسابي -->
     <string name="edit_profile">تحرير الملف الشخصي</string>
@@ -43,7 +104,94 @@
     <string name="change_photo">تغيير الصورة</string>
     <string name="photo_from_camera">الكاميرا</string>
     <string name="photo_from_gallery">المكتبة</string>
+    <string name="photo_save_failed">تعذر حفظ نسخة من الصورة على الجهاز</string>
+    <string name="profile_save_failed">فشل في حفظ البروفايل</string>
+    <string name="birth_year_prompt">السنة</string>
+    <string name="birth_month_prompt">الشهر</string>
+    <string name="birth_day_prompt">اليوم</string>
+    <string name="birth_year_required">يرجى اختيار سنة الميلاد</string>
+    <string name="birth_date_required">يرجى اختيار تاريخ الميلاد (اليوم والشهر والسنة)</string>
     <string name="profile_updated">تم تحديث الملف الشخصي</string>
+    <string name="profile_section_subjects">المواد / التخصص</string>
+    <string name="profile_section_experience">سنوات الخبرة</string>
+    <string name="profile_section_hourly">السعر بالساعة</string>
+    <string name="profile_section_bio">نبذة عنك</string>
+    <string name="profile_section_birth">تاريخ الميلاد</string>
+    <string name="profile_section_grade">الصف</string>
+    <string name="profile_section_school">المدرسة</string>
+    <string name="profile_experience_years">%1$s سنوات</string>
+    <string name="profile_dash">—</string>
+    <string name="profile_lessons_cost_title">تكلفة الدروس (مجموع حقل سعر الدرس)</string>
+    <string name="profile_lessons_cost_today">دروس اليوم: %1$s</string>
+    <string name="profile_lessons_cost_total">كل الدروس: %1$s</string>
+    <string name="hourly_rate_required">أدخل السعر بالساعة</string>
+    <string name="school_required">أدخل اسم المدرسة</string>
+    <string name="student_age_min_years">يجب أن يكون عمر الطالب %1$d سنوات على الأقل</string>
     <string name="loading">جاري التحميل…</string>
     <string name="camera_permission_required">يجب السماح بالوصول للكاميرا لالتقاط الصورة</string>
+    <string name="settings">الإعدادات</string>
+    <string name="hint">تلميح</string>
+    <string name="white">أبيض</string>
+    <string name="border">حدود</string>
+    <string name="divider">فاصل</string>
+
+    <!-- دروس وانضمام -->
+    <string name="nav_teacher_hub">التدريس</string>
+    <string name="nav_student_hub">تعلّم</string>
+    <string name="nav_my_lessons">دروسي</string>
+    <string name="nav_browse_lessons">الدروس</string>
+    <string name="nav_schedule">الجدول</string>
+    <string name="nav_join_requests">طلبات الانضمام</string>
+    <string name="nav_teachers_by_subject">المعلمون</string>
+    <string name="lesson_subject">المادة</string>
+    <string name="lesson_topic_hint">موضوع الدرس</string>
+    <string name="lesson_topic_required">أدخل موضوع الدرس</string>
+    <string name="lesson_datetime_label">التاريخ والوقت</string>
+    <string name="lesson_datetime_not_set">لم يُحدد بعد — اختر التاريخ والوقت</string>
+    <string name="lesson_pick_datetime">اختر التاريخ والوقت</string>
+    <string name="lesson_datetime_required">حدد تاريخاً ووقتاً للدرس</string>
+    <string name="lesson_time_must_be_future">يجب أن يكون وقت الدرس في المستقبل (بعد دقيقة على الأقل)</string>
+    <string name="lesson_join_already">لديك طلب أو انضمام لهذا الدرس مسبقاً</string>
+    <string name="publish_lesson_title">نشر درس</string>
+    <string name="publish_lesson_subtitle">المادة، عنوان الدرس، وتاريخ ووقت مستقبليان</string>
+    <string name="publish_lesson_submit">نشر</string>
+    <string name="publish_lesson_cancel">إلغاء</string>
+    <string name="publish_lesson_back">عودة</string>
+    <string name="publish_lesson_ok">تم نشر الدرس</string>
+    <string name="publish_lesson_failed">تعذر نشر الدرس</string>
+    <string name="publish_lesson_not_teacher">هذه الشاشة للمعلمين فقط</string>
+    <string name="lesson_request_join">طلب انضمام</string>
+    <string name="lesson_pending_review">قيد المراجعة</string>
+    <string name="lesson_enrolled">مسجّل</string>
+    <string name="lesson_rejected">مرفوض</string>
+    <string name="lesson_empty">لا توجد دروس</string>
+    <string name="lesson_teacher_label">المعلم: %1$s</string>
+    <string name="filter_all_subjects">كل المواد</string>
+    <string name="approve">قبول</string>
+    <string name="reject">رفض</string>
+    <string name="requests_empty">لا توجد طلبات معلّقة</string>
+    <string name="schedule_empty">لا توجد دروس قادمة في جدولك</string>
+    <string name="teachers_empty">لا يوجد معلمون مطابقون</string>
+    <string name="student_label">الطالب</string>
+    <string name="request_approved_toast">تم قبول الطلب</string>
+    <string name="request_rejected_toast">تم رفض الطلب</string>
+    <string name="request_join_sent">تم إرسال طلب الانضمام</string>
+    <string name="lesson_past_ended">انتهى الموعد</string>
+    <string name="lesson_price_hint">سعر الدرس (اختياري)</string>
+    <string name="lesson_phone_label">الهاتف: %1$s</string>
+    <string name="lesson_price_label">السعر: %1$s</string>
+    <string name="lesson_cancel_enrollment">إلغاء مشاركتي</string>
+    <string name="lesson_cancel_lesson">إلغاء الدرس</string>
+    <string name="lesson_cancel_short">إلغاء</string>
+    <string name="lesson_cancel_pending_request">إلغاء الطلب</string>
+    <string name="lesson_cancelled_badge">ملغى</string>
+    <string name="lesson_already_cancelled">الدرس ملغى مسبقاً</string>
+    <string name="lesson_cannot_cancel_after_start">لا يمكن الإلغاء بعد بدء وقت الدرس</string>
+    <string name="lesson_cancelled_or_missing">الدرس غير متاح أو ملغى</string>
+    <string name="lesson_cancel_done">تم الإلغاء</string>
+    <string name="home_col_price">السعر</string>
+    <string name="home_col_phone">الهاتف</string>
+    <string name="home_col_action">إجراء</string>
+    <string name="home_lesson_past_badge">منتهٍ</string>
+    <string name="home_schedule_today_badge">اليوم</string>
 </resources>

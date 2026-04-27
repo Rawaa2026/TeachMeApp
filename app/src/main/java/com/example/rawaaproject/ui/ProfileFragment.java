@@ -5,103 +5,106 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.model.GlideUrl;
-import com.bumptech.glide.load.model.LazyHeaders;
-import com.example.rawaaproject.LinkToDb.DALAppWriteConnection;
+import com.example.rawaaproject.ProfileEditActivity;
 import com.example.rawaaproject.R;
-import com.example.rawaaproject.data.ProfileRepository;
+import com.example.rawaaproject.util.ProfilePhotoStore;
+import com.example.rawaaproject.data.LessonRepository;
 import com.example.rawaaproject.data.SessionManager;
-import com.example.rawaaproject.models.UserProfile;
+import com.example.rawaaproject.data.UserRepository;
+import com.example.rawaaproject.models.Lesson;
+import com.example.rawaaproject.models.User;
+import com.example.rawaaproject.util.LessonCostHelper;
+
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.time.ZoneId;
+import java.util.ArrayList;
 
 /**
- * صفحة حسابي: عرض الملف الشخصي، تحريره، وتغيير الصورة (كاميرا أو مكتبة).
+ * صفحة حسابي المبسطة - عرض البيانات والانتقال للتعديل
  */
 public class ProfileFragment extends Fragment {
 
     private SessionManager sessionManager;
-    private ProfileRepository profileRepository;
-    private UserProfile currentProfile;
-    private Uri currentPhotoUri; // صورة محليّة لم تُرفع بعد
-    private boolean isEditMode = false;
+    private UserRepository userRepository;
+    private User currentUser;
 
     private ImageView profilePhoto;
-    private View profilePhotoPlaceholder;
     private TextView profilePhotoAddLabel;
-    private View profilePhotoClick;
     private TextView profileName;
-    private EditText profileNameEdit;
     private TextView profileEmail;
-    private TextView profileDescription;
-    private EditText profileDescriptionEdit;
-    private LinearLayout profileBirthSection;
-    private TextView profileBirthDate;
-    private EditText profileBirthDateEdit;
+    private TextView profilePhone;
+    private TextView profileRole;
+    private TextView profileCreatedAt;
+    private TextView profileUpdatedAt;
     private Button profileEditBtn;
-    private Button profileSaveBtn;
+    private Button profileLogoutBtn;
+    private Button profilePickGalleryBtn;
+    private Button profilePickCameraBtn;
+    private View profilePhotoClick;
+    private View profileMainCard;
 
-    private ActivityResultLauncher<Intent> pickImage = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() != android.app.Activity.RESULT_OK || result.getData() == null) return;
-                Uri uri = result.getData().getData();
-                if (uri != null) setPhotoFromUri(uri);
-            });
+    private View teacherExtraBlock;
+    private View studentExtraBlock;
+    private TextView profileTeacherSubjects;
+    private TextView profileTeacherExperience;
+    private TextView profileTeacherHourly;
+    private TextView profileTeacherBio;
+    private TextView profileStudentBirth;
+    private TextView profileStudentGrade;
+    private TextView profileStudentSchool;
+    private TextView profileStudentBio;
 
-    private final ActivityResultLauncher<String> requestCameraPermission = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(),
-            granted -> {
-                if (granted) launchCamera();
-                else Toast.makeText(requireContext(), getString(R.string.camera_permission_required), Toast.LENGTH_SHORT).show();
-            });
+    private ProgressBar profileLessonsCostProgress;
+    private TextView profileLessonsCostToday;
+    private TextView profileLessonsCostTotal;
 
-    private ActivityResultLauncher<Intent> takePicture = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() != android.app.Activity.RESULT_OK) return;
-                Intent data = result.getData();
-                if (currentPhotoUri != null) {
-                    try {
-                        if (contentUriHasData(currentPhotoUri)) {
-                            setPhotoFromUri(currentPhotoUri);
-                            return;
-                        }
-                    } catch (Exception ignored) { }
-                }
-                if (data != null && data.getData() != null) {
-                    setPhotoFromUri(data.getData());
-                } else if (data != null && data.getExtras() != null && data.getExtras().get("data") instanceof android.graphics.Bitmap) {
-                    saveBitmapAndSetPhoto((android.graphics.Bitmap) data.getExtras().get("data"));
-                }
-            });
+    private ActivityResultLauncher<String> pickImage;
+    private ActivityResultLauncher<Uri> takePicture;
+    private ActivityResultLauncher<String> requestCameraPermission;
+    private Uri cameraImageUri;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sessionManager = new SessionManager(requireContext());
-        profileRepository = new ProfileRepository(requireContext());
+        userRepository = new UserRepository(requireContext());
+
+        pickImage = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                applyPickedPhoto(uri);
+            }
+        });
+        takePicture = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+            if (success && cameraImageUri != null) {
+                applyPickedPhoto(cameraImageUri);
+            }
+        });
+        requestCameraPermission = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                granted -> {
+                    if (granted) {
+                        launchCamera();
+                    } else {
+                        Toast.makeText(requireContext(), R.string.camera_permission_required, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Nullable
@@ -113,251 +116,362 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        initViews(view);
+        setupUserProfile();
+        setupClickListeners();
+    }
+
+    private void initViews(View view) {
         profilePhoto = view.findViewById(R.id.profile_photo);
-        profilePhotoPlaceholder = view.findViewById(R.id.profile_photo_placeholder);
         profilePhotoAddLabel = view.findViewById(R.id.profile_photo_add_label);
-        profilePhotoClick = view.findViewById(R.id.profile_photo_click);
         profileName = view.findViewById(R.id.profile_name);
-        profileNameEdit = view.findViewById(R.id.profile_name_edit);
         profileEmail = view.findViewById(R.id.profile_email);
-        profileDescription = view.findViewById(R.id.profile_description);
-        profileDescriptionEdit = view.findViewById(R.id.profile_description_edit);
-        profileBirthSection = view.findViewById(R.id.profile_birth_section);
-        profileBirthDate = view.findViewById(R.id.profile_birth_date);
-        profileBirthDateEdit = view.findViewById(R.id.profile_birth_date_edit);
+        profilePhone = view.findViewById(R.id.profile_phone);
+        profileRole = view.findViewById(R.id.profile_role);
+        profileCreatedAt = view.findViewById(R.id.profile_created_at);
+        profileUpdatedAt = view.findViewById(R.id.profile_updated_at);
         profileEditBtn = view.findViewById(R.id.profile_edit_btn);
-        profileSaveBtn = view.findViewById(R.id.profile_save_btn);
+        profileLogoutBtn = view.findViewById(R.id.profile_logout_btn);
+        profilePickGalleryBtn = view.findViewById(R.id.profile_pick_gallery_btn);
+        profilePickCameraBtn = view.findViewById(R.id.profile_pick_camera_btn);
+        profilePhotoClick = view.findViewById(R.id.profile_photo_click);
+        profileMainCard = view.findViewById(R.id.profile_main_card);
 
-        profilePhotoClick.setOnClickListener(v -> { if (isEditMode) showPhotoSourceDialog(); });
-        profilePhotoAddLabel.setOnClickListener(v -> { if (isEditMode) showPhotoSourceDialog(); });
-        updatePhotoAreaClickable(false);
+        teacherExtraBlock = view.findViewById(R.id.profile_teacher_extra);
+        studentExtraBlock = view.findViewById(R.id.profile_student_extra);
+        profileTeacherSubjects = view.findViewById(R.id.profile_teacher_subjects);
+        profileTeacherExperience = view.findViewById(R.id.profile_teacher_experience);
+        profileTeacherHourly = view.findViewById(R.id.profile_teacher_hourly);
+        profileTeacherBio = view.findViewById(R.id.profile_teacher_bio);
+        profileStudentBirth = view.findViewById(R.id.profile_student_birth);
+        profileStudentGrade = view.findViewById(R.id.profile_student_grade);
+        profileStudentSchool = view.findViewById(R.id.profile_student_school);
+        profileStudentBio = view.findViewById(R.id.profile_student_bio);
+        profileLessonsCostProgress = view.findViewById(R.id.profile_lessons_cost_progress);
+        profileLessonsCostToday = view.findViewById(R.id.profile_lessons_cost_today);
+        profileLessonsCostTotal = view.findViewById(R.id.profile_lessons_cost_total);
+    }
 
-        profileEditBtn.setOnClickListener(v -> setEditMode(true));
-        profileSaveBtn.setOnClickListener(v -> saveProfile());
-
-        String userId = sessionManager.getUserId();
-        String email = sessionManager.getUserEmail();
-        if (userId == null || userId.isEmpty()) {
-            profileEmail.setText(email != null ? email : "");
-            profileName.setText("");
+    private void setupUserProfile() {
+        currentUser = sessionManager.getUserSession();
+        if (currentUser == null) {
+            Toast.makeText(requireContext(), "لم يتم العثور على بيانات المستخدم", Toast.LENGTH_SHORT).show();
             return;
         }
-        profileEmail.setText(email);
-        profileRepository.getProfile(userId, result -> {
-            if (result.success && result.data != null) {
-                currentProfile = result.data;
-                fillProfileViews(currentProfile);
+
+        final User localSnapshot = currentUser;
+        final String localPhotoToKeep = ProfilePhotoStore.isPersistentLocalPath(localSnapshot.profileImageUrl)
+                ? localSnapshot.profileImageUrl
+                : null;
+
+        displayUserData();
+
+        if (localSnapshot.id != null && !localSnapshot.id.isEmpty()) {
+            new Thread(() -> {
+                User updatedUser = userRepository.getUserById(localSnapshot.id);
+                requireActivity().runOnUiThread(() -> {
+                    if (updatedUser != null) {
+                        copySessionProfileExtras(localSnapshot, updatedUser);
+                        if ((updatedUser.profileImageUrl == null || updatedUser.profileImageUrl.isEmpty()
+                                || !updatedUser.profileImageUrl.startsWith("http"))
+                                && localPhotoToKeep != null
+                                && ProfilePhotoStore.isPersistentLocalPath(localPhotoToKeep)) {
+                            updatedUser.profileImageUrl = localPhotoToKeep;
+                        }
+                        currentUser = updatedUser;
+                        sessionManager.saveUserSession(currentUser);
+                    }
+                    displayUserData();
+                });
+            }).start();
+        } else {
+            displayUserData();
+        }
+    }
+
+    /**
+     * حقول المواد والخبرة والنبذة وغيرها غير مخزّنة في مستند Appwrite — ندمجها من الجلسة
+     * حتى لا تُستبدل بقيم فارغة عند جلب المستند.
+     */
+    private static void copySessionProfileExtras(User from, User onto) {
+        if (from == null || onto == null) {
+            return;
+        }
+        onto.specialization = from.specialization;
+        onto.experience = from.experience;
+        onto.description = from.description;
+        onto.hourlyRate = from.hourlyRate;
+        onto.grade = from.grade;
+        onto.school = from.school;
+        if (from.isStudent()) {
+            onto.subjectsNeeded = null;
+        } else {
+            onto.subjectsNeeded = from.subjectsNeeded;
+        }
+        onto.birthDate = from.birthDate;
+    }
+
+    private void displayUserData() {
+        if (currentUser == null) return;
+
+        // البيانات الأساسية
+        profileName.setText(currentUser.fullName != null && !currentUser.fullName.isEmpty() ? 
+            currentUser.fullName : "غير محدد");
+        profileEmail.setText(currentUser.email != null && !currentUser.email.isEmpty() ? 
+            currentUser.email : "غير محدد");
+        profilePhone.setText(currentUser.phoneNumber != null && !currentUser.phoneNumber.isEmpty() ? 
+            currentUser.phoneNumber : "غير محدد");
+        profileRole.setText(currentUser.role != null ?
+            (currentUser.isTeacher() ? "معلم" : "طالب") : "غير محدد");
+
+        applyRoleCardStyle();
+
+        String dash = getString(R.string.profile_dash);
+        if (currentUser.isTeacher()) {
+            teacherExtraBlock.setVisibility(View.VISIBLE);
+            studentExtraBlock.setVisibility(View.GONE);
+            profileTeacherSubjects.setText(formatMultilineSubjects(currentUser.specialization, dash));
+            if (currentUser.experience != null && !currentUser.experience.trim().isEmpty()) {
+                profileTeacherExperience.setText(
+                        getString(R.string.profile_experience_years, currentUser.experience.trim()));
             } else {
-                currentProfile = new UserProfile();
-                currentProfile.userId = userId;
-                currentProfile.role = sessionManager.getUserRole();
-                currentProfile.fullName = "";
-                currentProfile.description = "";
-                currentProfile.birthDate = "";
-                currentProfile.photoUrl = null;
-                profileName.setText("");
+                profileTeacherExperience.setText(dash);
+            }
+            profileTeacherHourly.setText(
+                    currentUser.hourlyRate != null && !currentUser.hourlyRate.trim().isEmpty()
+                            ? currentUser.hourlyRate.trim()
+                            : dash);
+            profileTeacherBio.setText(
+                    currentUser.description != null && !currentUser.description.trim().isEmpty()
+                            ? currentUser.description.trim()
+                            : dash);
+        } else {
+            teacherExtraBlock.setVisibility(View.GONE);
+            studentExtraBlock.setVisibility(View.VISIBLE);
+            profileStudentBirth.setText(
+                    currentUser.birthDate != null && !currentUser.birthDate.trim().isEmpty()
+                            ? currentUser.birthDate.trim()
+                            : dash);
+            profileStudentGrade.setText(
+                    currentUser.grade != null && !currentUser.grade.trim().isEmpty()
+                            ? currentUser.grade.trim()
+                            : dash);
+            profileStudentSchool.setText(
+                    currentUser.school != null && !currentUser.school.trim().isEmpty()
+                            ? currentUser.school.trim()
+                            : dash);
+            profileStudentBio.setText(
+                    currentUser.description != null && !currentUser.description.trim().isEmpty()
+                            ? currentUser.description.trim()
+                            : dash);
+        }
+
+        // التواريخ
+        profileCreatedAt.setText(formatDate(currentUser.createdAt));
+        profileUpdatedAt.setText(formatDate(currentUser.updatedAt));
+
+        if (currentUser.profileImageUrl != null && !currentUser.profileImageUrl.isEmpty()) {
+            try {
+                Object glideModel = ProfilePhotoStore.glideModel(currentUser.profileImageUrl);
+                if (glideModel == null) {
+                    profilePhoto.setVisibility(View.VISIBLE);
+                    profilePhoto.setImageDrawable(null);
+                    profilePhotoAddLabel.setVisibility(View.VISIBLE);
+                } else {
+                    Glide.with(requireContext())
+                            .load(glideModel)
+                            .centerCrop()
+                            .into(profilePhoto);
+                    profilePhoto.setVisibility(View.VISIBLE);
+                    profilePhotoAddLabel.setVisibility(View.GONE);
+                }
+            } catch (Exception e) {
+                profilePhoto.setVisibility(View.VISIBLE);
+                profilePhoto.setImageDrawable(null);
+                profilePhotoAddLabel.setVisibility(View.VISIBLE);
+            }
+        } else {
+            profilePhoto.setVisibility(View.VISIBLE);
+            profilePhoto.setImageDrawable(null);
+            profilePhotoAddLabel.setVisibility(View.VISIBLE);
+        }
+
+        loadLessonCostSummary();
+    }
+
+    private void loadLessonCostSummary() {
+        if (profileLessonsCostToday == null || profileLessonsCostTotal == null) {
+            return;
+        }
+        User u = sessionManager.getUserSession();
+        if (u == null || u.id == null || u.id.isEmpty()) {
+            profileLessonsCostProgress.setVisibility(View.GONE);
+            profileLessonsCostToday.setText(getString(R.string.profile_lessons_cost_today, "0"));
+            profileLessonsCostTotal.setText(getString(R.string.profile_lessons_cost_total, "0"));
+            return;
+        }
+        profileLessonsCostProgress.setVisibility(View.VISIBLE);
+        LessonRepository repo = new LessonRepository(requireContext());
+        ZoneId zone = ZoneId.systemDefault();
+        if (u.isTeacher()) {
+            repo.listMyLessonsAsTeacher(u.id, res -> {
+                if (!isAdded() || getContext() == null) {
+                    return;
+                }
+                profileLessonsCostProgress.setVisibility(View.GONE);
+                ArrayList<Lesson> list = res.success && res.data != null ? res.data : new ArrayList<>();
+                applyCostTexts(list, zone);
+            });
+        } else {
+            repo.loadStudentSchedule(u.id, res -> {
+                if (!isAdded() || getContext() == null) {
+                    return;
+                }
+                profileLessonsCostProgress.setVisibility(View.GONE);
+                ArrayList<Lesson> list = res.success && res.data != null ? res.data : new ArrayList<>();
+                applyCostTexts(list, zone);
+            });
+        }
+    }
+
+    private void applyCostTexts(ArrayList<Lesson> list, ZoneId zone) {
+        double[] sums = LessonCostHelper.sumTodayAndTotal(list, zone);
+        String t = LessonCostHelper.formatAmount(sums[0]);
+        String tot = LessonCostHelper.formatAmount(sums[1]);
+        profileLessonsCostToday.setText(getString(R.string.profile_lessons_cost_today, t));
+        profileLessonsCostTotal.setText(getString(R.string.profile_lessons_cost_total, tot));
+    }
+
+    private void applyRoleCardStyle() {
+        if (currentUser == null) return;
+
+        int accent = ContextCompat.getColor(requireContext(),
+                currentUser.isTeacher() ? R.color.profile_teacher_accent : R.color.profile_student_accent);
+        profileRole.setTextColor(accent);
+
+        if (profileMainCard != null) {
+            profileMainCard.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.background));
+        }
+    }
+
+    private void applyPickedPhoto(Uri uri) {
+        if (currentUser == null || currentUser.id == null || currentUser.id.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.photo_save_failed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (!ProfilePhotoStore.copyFromUri(requireContext(), currentUser.id, uri)) {
+            Toast.makeText(requireContext(), R.string.photo_save_failed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        File local = ProfilePhotoStore.getPhotoFile(requireContext(), currentUser.id);
+        if (local == null || !local.exists()) {
+            Toast.makeText(requireContext(), R.string.photo_save_failed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        final String localPath = local.getAbsolutePath();
+        currentUser.profileImageUrl = localPath;
+        currentUser.updateTimestamp();
+        sessionManager.saveUserSession(currentUser);
+        Glide.with(requireContext()).load(local).centerCrop().into(profilePhoto);
+        profilePhoto.setVisibility(View.VISIBLE);
+        profilePhotoAddLabel.setVisibility(View.GONE);
+        Uri uploadUri = Uri.fromFile(local);
+        userRepository.updateUser(currentUser, uploadUri, result -> {
+            if (getActivity() == null || !isAdded()) {
+                return;
+            }
+            if (result.success && result.customData instanceof User) {
+                User u = (User) result.customData;
+                currentUser = u;
+                String url = currentUser.profileImageUrl;
+                if (url == null || url.isEmpty()
+                        || !(url.startsWith("http://") || url.startsWith("https://"))) {
+                    currentUser.profileImageUrl = localPath;
+                }
+                sessionManager.saveUserSession(currentUser);
+            }
+            if (!result.success && result.message != null) {
+                Toast.makeText(requireContext(), result.message, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void fillProfileViews(UserProfile p) {
-        profileName.setText(p.fullName != null ? p.fullName : "");
-        profileDescription.setText(p.description != null ? p.description : "");
-        profileDescription.setVisibility(View.VISIBLE);
-        profileDescriptionEdit.setVisibility(View.GONE);
-        if ("student".equals(p.role) && p.birthDate != null && !p.birthDate.isEmpty()) {
-            profileBirthSection.setVisibility(View.VISIBLE);
-            profileBirthDate.setText(p.birthDate);
-        } else {
-            profileBirthSection.setVisibility(View.GONE);
-        }
-        if (p.photoUrl != null && !p.photoUrl.isEmpty()) {
-            profilePhotoAddLabel.setVisibility(View.GONE);
-            profilePhotoPlaceholder.setVisibility(View.GONE);
-            profilePhoto.setVisibility(View.VISIBLE);
-            loadProfilePhotoFromUrl(p.photoUrl, profilePhoto);
-        } else {
-            profilePhotoAddLabel.setVisibility(View.VISIBLE);
-            profilePhotoPlaceholder.setVisibility(View.GONE);
-            profilePhoto.setVisibility(View.GONE);
-        }
-    }
-
-    /** تحميل الصورة من رابط (مع رؤوس Appwrite إن لزم). skipCache=true لعدم استخدام الكاش بعد تحديث الصورة. */
-    private void loadProfilePhotoFromUrl(String photoUrl, ImageView into) {
-        loadProfilePhotoFromUrl(photoUrl, into, false);
-    }
-
-    private void loadProfilePhotoFromUrl(String photoUrl, ImageView into, boolean skipCache) {
-        if (photoUrl == null || into == null) return;
-        try {
-            String urlToLoad = photoUrl;
-            if (skipCache && photoUrl.contains("appwrite")) {
-                urlToLoad = photoUrl + (photoUrl.contains("?") ? "&" : "?") + "v=" + System.currentTimeMillis();
-            }
-            if (urlToLoad.contains("appwrite")) {
-                GlideUrl glideUrl = new GlideUrl(urlToLoad, new LazyHeaders.Builder()
-                        .addHeader("X-Appwrite-Project", DALAppWriteConnection.getProjectId())
-                        .addHeader("X-Appwrite-Key", DALAppWriteConnection.getApiKey())
-                        .build());
-                if (skipCache) {
-                    Glide.with(requireContext()).load(glideUrl).centerCrop()
-                            .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(into);
-                } else {
-                    Glide.with(requireContext()).load(glideUrl).centerCrop().into(into);
-                }
-            } else {
-                if (skipCache) {
-                    Glide.with(requireContext()).load(urlToLoad).centerCrop()
-                            .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(into);
-                } else {
-                    Glide.with(requireContext()).load(urlToLoad).centerCrop().into(into);
-                }
-            }
-        } catch (Exception e) {
-            into.setImageDrawable(null);
-        }
-    }
-
-    private void setPhotoFromUri(Uri uri) {
-        currentPhotoUri = uri;
-        profilePhoto.setImageURI(uri);
-        profilePhoto.setVisibility(View.VISIBLE);
-        profilePhotoAddLabel.setVisibility(View.GONE);
-        profilePhotoPlaceholder.setVisibility(View.GONE);
-    }
-
-    private void showPhotoSourceDialog() {
-        String[] options = {
-                getString(R.string.photo_from_camera),
-                getString(R.string.photo_from_gallery)
-        };
-        new AlertDialog.Builder(requireContext())
-                .setTitle(R.string.change_photo)
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) openCamera();
-                    else openGallery();
-                })
-                .show();
-    }
-
-    private void openGallery() {
-        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-        i.setType("image/*");
-        pickImage.launch(i);
-    }
-
     private void openCamera() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            launchCamera();
-        } else {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
             requestCameraPermission.launch(Manifest.permission.CAMERA);
+            return;
         }
+        launchCamera();
     }
 
     private void launchCamera() {
         try {
-            File dir = requireContext().getFilesDir();
-            File photoFile = new File(dir, "profile_camera_" + System.currentTimeMillis() + ".jpg");
-            if (!photoFile.exists()) photoFile.createNewFile();
-            currentPhotoUri = androidx.core.content.FileProvider.getUriForFile(
+            File photoFile = new File(requireContext().getCacheDir(),
+                    "profile_capture_" + System.currentTimeMillis() + ".jpg");
+            cameraImageUri = FileProvider.getUriForFile(
                     requireContext(),
                     requireContext().getPackageName() + ".fileprovider",
                     photoFile);
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri);
-            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            takePicture.launch(intent);
-        } catch (IOException e) {
-            Toast.makeText(requireContext(), getString(R.string.change_photo), Toast.LENGTH_SHORT).show();
+            takePicture.launch(cameraImageUri);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "تعذر فتح الكاميرا", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /** التحقق من أن الـ Uri يحتوي على بيانات (ملف غير فارغ) */
-    private boolean contentUriHasData(Uri uri) throws IOException {
-        try (InputStream is = requireContext().getContentResolver().openInputStream(uri)) {
-            if (is == null) return false;
-            return is.read() != -1;
+    private static String formatMultilineSubjects(String stored, String emptyDash) {
+        if (stored == null || stored.trim().isEmpty()) {
+            return emptyDash;
         }
+        String t = stored.trim().replace('\r', '\n');
+        String[] lines = t.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append("• ").append(line);
+        }
+        return sb.length() > 0 ? sb.toString() : emptyDash;
     }
 
-    /** حفظ البيتماب من الكاميرا (بعض الأجهزة ترجع thumbnail فقط) وعرضه */
-    private void saveBitmapAndSetPhoto(android.graphics.Bitmap bitmap) {
+    private String formatDate(long timestamp) {
+        if (timestamp <= 0) return "غير محدد";
         try {
-            File dir = requireContext().getFilesDir();
-            File photoFile = new File(dir, "profile_camera_" + System.currentTimeMillis() + ".jpg");
-            try (FileOutputStream out = new FileOutputStream(photoFile)) {
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out);
-            }
-            currentPhotoUri = androidx.core.content.FileProvider.getUriForFile(
-                    requireContext(),
-                    requireContext().getPackageName() + ".fileprovider",
-                    photoFile);
-            setPhotoFromUri(currentPhotoUri);
-        } catch (IOException e) {
-            Toast.makeText(requireContext(), getString(R.string.change_photo), Toast.LENGTH_SHORT).show();
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
+            return sdf.format(new java.util.Date(timestamp));
+        } catch (Exception e) {
+            return "غير محدد";
         }
     }
 
-    private void setEditMode(boolean edit) {
-        isEditMode = edit;
-        updatePhotoAreaClickable(edit);
-        profileEditBtn.setVisibility(edit ? View.GONE : View.VISIBLE);
-        profileSaveBtn.setVisibility(edit ? View.VISIBLE : View.GONE);
-        profileName.setVisibility(edit ? View.GONE : View.VISIBLE);
-        profileNameEdit.setVisibility(edit ? View.VISIBLE : View.GONE);
-        profileDescription.setVisibility(edit ? View.GONE : View.VISIBLE);
-        profileDescriptionEdit.setVisibility(edit ? View.VISIBLE : View.GONE);
-        if (edit) {
-            profileNameEdit.setText(profileName.getText());
-            profileDescriptionEdit.setText(profileDescription.getText());
-            if (profileBirthSection.getVisibility() == View.VISIBLE) {
-                profileBirthDate.setVisibility(View.GONE);
-                profileBirthDateEdit.setVisibility(View.VISIBLE);
-                profileBirthDateEdit.setText(profileBirthDate.getText());
-            }
-        } else {
-            if (profileBirthSection.getVisibility() == View.VISIBLE) {
-                profileBirthDate.setVisibility(View.VISIBLE);
-                profileBirthDateEdit.setVisibility(View.GONE);
-            }
-        }
-    }
+    private void setupClickListeners() {
+        profileEditBtn.setOnClickListener(v -> {
+            startActivity(new Intent(requireContext(), ProfileEditActivity.class));
+        });
 
-    /** تفعيل أو تعطيل النقر على منطقة الصورة (الكاميرا/المكتبة فقط في وضع التحرير) */
-    private void updatePhotoAreaClickable(boolean clickable) {
-        profilePhotoClick.setClickable(clickable);
-        profilePhotoClick.setFocusable(clickable);
-        profilePhotoAddLabel.setClickable(clickable);
-    }
-
-    private void saveProfile() {
-        if (currentProfile == null) {
-            currentProfile = new UserProfile();
-            currentProfile.userId = sessionManager.getUserId();
-            currentProfile.role = sessionManager.getUserRole();
-        }
-        currentProfile.fullName = profileNameEdit.getText() != null ? profileNameEdit.getText().toString().trim() : currentProfile.fullName;
-        currentProfile.description = profileDescriptionEdit.getText() != null ? profileDescriptionEdit.getText().toString().trim() : "";
-        if (profileBirthDateEdit.getVisibility() == View.VISIBLE) {
-            currentProfile.birthDate = profileBirthDateEdit.getText() != null ? profileBirthDateEdit.getText().toString().trim() : "";
-        }
-        profileSaveBtn.setEnabled(false);
-        profileRepository.updateProfile(currentProfile, currentPhotoUri, result -> {
-            profileSaveBtn.setEnabled(true);
-            if (result.success) {
-                currentPhotoUri = null;
-                if (result.data != null) currentProfile = result.data;
-                setEditMode(false);
-                fillProfileViews(currentProfile);
-                if (currentProfile != null && currentProfile.photoUrl != null && !currentProfile.photoUrl.isEmpty()) {
-                    loadProfilePhotoFromUrl(currentProfile.photoUrl, profilePhoto, true);
-                }
-                Toast.makeText(requireContext(), getString(R.string.profile_updated), Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(requireContext(), result.message != null ? result.message : getString(R.string.save), Toast.LENGTH_SHORT).show();
+        profilePickGalleryBtn.setOnClickListener(v -> pickImage.launch("image/*"));
+        profilePickCameraBtn.setOnClickListener(v -> openCamera());
+        profilePhotoClick.setOnClickListener(v -> pickImage.launch("image/*"));
+        
+        profileLogoutBtn.setOnClickListener(v -> {
+            sessionManager.clearSession();
+            // إعادة تشغيل النشاط الرئيسي للعودة لشاشة تسجيل الدخول
+            if (getActivity() != null) {
+                getActivity().recreate();
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // إعادة تحميل البيانات عند العودة من شاشة التعديل
+        setupUserProfile();
     }
 }
