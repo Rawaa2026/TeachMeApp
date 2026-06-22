@@ -17,7 +17,7 @@
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorSecondaryContainer">@color/brand_neutral_light</item>
         <item name="colorOnSecondaryContainer">@color/brand_neutral_dark</item>
-        <item name="android:statusBarColor">@color/brand_neutral_light</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
 
         <!-- تغيير نوع الخط وحجمه (زيادة بنسبة 15% تقريباً) -->
         <item name="android:fontFamily">sans-serif-medium</item>
@@ -64,7 +64,7 @@
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorSecondaryContainer">@color/brand_teacher_container</item>
         <item name="colorOnSecondaryContainer">@color/brand_teacher_dark</item>
-        <item name="android:statusBarColor">@color/brand_teacher_light</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <!-- طالب: أخضر ومشتقاته -->
@@ -77,7 +77,7 @@
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorSecondaryContainer">@color/brand_student_container</item>
         <item name="colorOnSecondaryContainer">@color/brand_student_dark</item>
-        <item name="android:statusBarColor">@color/brand_student_light</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <style name="Theme.RawaaProject.Splash" parent="Theme.RawaaProject">

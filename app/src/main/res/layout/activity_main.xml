@@ -6,13 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    android:fitsSystemWindows="true"
     android:layoutDirection="rtl"
     tools:context=".MainActivity">
 
     <!-- Custom Header -->
     <include
-        android:id="@+id/header_main"
         layout="@layout/custom_header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -31,7 +29,7 @@
         app:layout_constraintBottom_toTopOf="@id/bottom_nav"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header_main" />
+        app:layout_constraintTop_toBottomOf="@id/header_root" />
 
     <!-- Bottom Navigation with safe area -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

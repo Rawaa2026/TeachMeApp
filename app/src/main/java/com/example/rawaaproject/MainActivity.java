@@ -20,6 +20,7 @@ import com.example.rawaaproject.ui.ProfileFragment;
 import com.example.rawaaproject.ui.StudentHubFragment;
 import com.example.rawaaproject.ui.TeacherHubFragment;
 import com.example.rawaaproject.util.RoleThemeHelper;
+import com.example.rawaaproject.util.SafeAreaHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         RoleThemeHelper.applyForLoggedInUser(this);
         super.onCreate(savedInstanceState);
+        SafeAreaHelper.enableEdgeToEdge(this);
         setContentView(R.layout.activity_main);
 
         sessionManager = new SessionManager(this);
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
         headerTitle = findViewById(R.id.header_title);
         contentFrame = findViewById(R.id.content_frame);
         bottomNav = findViewById(R.id.bottom_nav);
+
+        SafeAreaHelper.applyHeaderStatusBarInset(findViewById(R.id.header_root));
+        SafeAreaHelper.applyNavigationBarMargin(bottomNav, R.dimen.safe_area_margin_vertical);
 
         if (sessionManager.isLoggedIn()) {
             showMainContent();

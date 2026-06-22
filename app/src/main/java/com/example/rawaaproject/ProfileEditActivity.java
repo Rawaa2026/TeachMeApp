@@ -27,6 +27,7 @@ import com.example.rawaaproject.util.BirthDateSpinners;
 import com.example.rawaaproject.util.ProfilePhotoStore;
 import com.example.rawaaproject.util.ProfileValidation;
 import com.example.rawaaproject.util.RoleThemeHelper;
+import com.example.rawaaproject.util.SafeAreaHelper;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -135,7 +136,11 @@ public class ProfileEditActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         RoleThemeHelper.applyForLoggedInUser(this);
         super.onCreate(savedInstanceState);
+        SafeAreaHelper.enableEdgeToEdge(this);
         setContentView(R.layout.activity_profile_edit);
+
+        SafeAreaHelper.applyHeaderStatusBarInset(findViewById(R.id.header_root));
+        SafeAreaHelper.applyNavigationBarPadding(findViewById(android.R.id.content));
 
         sessionManager = new SessionManager(this);
         userRepository = new UserRepository(this);

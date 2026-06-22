@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/background"
     android:fillViewport="true"
-    android:fitsSystemWindows="true"
     android:layoutDirection="rtl">
 
     <LinearLayout
@@ -17,9 +16,8 @@
 
         <!-- Custom Header -->
         <include
-            android:id="@+id/header_register"
             layout="@layout/custom_header"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <!-- Role Selection -->

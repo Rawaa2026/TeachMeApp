@@ -51,8 +51,6 @@ public class ProfileFragment extends Fragment {
     private TextView profileEmail;
     private TextView profilePhone;
     private TextView profileRole;
-    private TextView profileCreatedAt;
-    private TextView profileUpdatedAt;
     private Button profileEditBtn;
     private Button profileLogoutBtn;
     private Button profilePickGalleryBtn;
@@ -128,8 +126,6 @@ public class ProfileFragment extends Fragment {
         profileEmail = view.findViewById(R.id.profile_email);
         profilePhone = view.findViewById(R.id.profile_phone);
         profileRole = view.findViewById(R.id.profile_role);
-        profileCreatedAt = view.findViewById(R.id.profile_created_at);
-        profileUpdatedAt = view.findViewById(R.id.profile_updated_at);
         profileEditBtn = view.findViewById(R.id.profile_edit_btn);
         profileLogoutBtn = view.findViewById(R.id.profile_logout_btn);
         profilePickGalleryBtn = view.findViewById(R.id.profile_pick_gallery_btn);
@@ -265,10 +261,6 @@ public class ProfileFragment extends Fragment {
                             ? currentUser.description.trim()
                             : dash);
         }
-
-        // التواريخ
-        profileCreatedAt.setText(formatDate(currentUser.createdAt));
-        profileUpdatedAt.setText(formatDate(currentUser.updatedAt));
 
         if (currentUser.profileImageUrl != null && !currentUser.profileImageUrl.isEmpty()) {
             try {
@@ -438,16 +430,6 @@ public class ProfileFragment extends Fragment {
             sb.append("• ").append(line);
         }
         return sb.length() > 0 ? sb.toString() : emptyDash;
-    }
-
-    private String formatDate(long timestamp) {
-        if (timestamp <= 0) return "غير محدد";
-        try {
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault());
-            return sdf.format(new java.util.Date(timestamp));
-        } catch (Exception e) {
-            return "غير محدد";
-        }
     }
 
     private void setupClickListeners() {

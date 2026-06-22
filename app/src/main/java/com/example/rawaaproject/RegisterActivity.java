@@ -16,6 +16,7 @@ import com.example.rawaaproject.data.AuthRepository;
 import com.example.rawaaproject.data.SessionManager;
 import com.example.rawaaproject.util.BirthDateSpinners;
 import com.example.rawaaproject.util.ProfileValidation;
+import com.example.rawaaproject.util.SafeAreaHelper;
 
 /**
  * شاشة التسجيل: اختيار الدور (مدرس/طالب) ثم الاسم، الصورة، الوصف، وتاريخ الميلاد للطالب.
@@ -47,7 +48,11 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SafeAreaHelper.enableEdgeToEdge(this);
         setContentView(R.layout.activity_register);
+
+        SafeAreaHelper.applyHeaderStatusBarInset(findViewById(R.id.header_root));
+        SafeAreaHelper.applyNavigationBarPadding(findViewById(android.R.id.content));
 
         TextView headerTitle = findViewById(R.id.header_title);
         if (headerTitle != null) {
