@@ -3,6 +3,8 @@ package com.example.rawaaproject.util;
 import android.content.Context;
 import android.net.Uri;
 
+import com.example.rawaaproject.models.User;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -27,6 +29,26 @@ public final class ProfilePhotoStore {
         }
         String safe = userId.replaceAll("[^a-zA-Z0-9_-]", "_");
         return new File(dir, safe + ".jpg");
+    }
+
+    /** ملف صورة محفوظ محلياً للمستخدم إن وُجد */
+    public static File getExistingPhotoFile(Context context, String userId) {
+        File file = getPhotoFile(context, userId);
+        if (file != null && file.exists() && file.length() > 0) {
+            return file;
+        }
+        return null;
+    }
+
+    /** يفضّل المسار المحلي في الجلسة عند وجود صورة محفوظة */
+    public static void preferLocalPhotoUrl(Context context, User user) {
+        if (context == null || user == null || user.id == null || user.id.isEmpty()) {
+            return;
+        }
+        File local = getExistingPhotoFile(context, user.id);
+        if (local != null) {
+            user.profileImageUrl = local.getAbsolutePath();
+        }
     }
 
     /**
@@ -79,6 +101,15 @@ public final class ProfilePhotoStore {
     /** مسار ملف داخلي موجود — يبقى صالحاً بعد إعادة التشغيل */
     public static boolean isPersistentLocalPath(String profileImageUrl) {
         return asLocalFile(profileImageUrl) != null;
+    }
+
+    /** نموذج تحميل مناسب لـ Glide: محلي أولاً ثم http(s) */
+    public static Object displayModel(Context context, String userId, String profileImageUrl) {
+        File local = getExistingPhotoFile(context, userId);
+        if (local != null) {
+            return local;
+        }
+        return glideModel(profileImageUrl);
     }
 
     /** نموذج تحميل مناسب لـ Glide: {@link File} أو سلسلة http(s) أو السلسلة كما هي */

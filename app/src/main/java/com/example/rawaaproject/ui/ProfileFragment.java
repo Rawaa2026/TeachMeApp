@@ -22,6 +22,7 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.signature.ObjectKey;
 import com.example.rawaaproject.ProfileEditActivity;
 import com.example.rawaaproject.R;
 import com.example.rawaaproject.util.ProfilePhotoStore;
@@ -156,10 +157,8 @@ public class ProfileFragment extends Fragment {
         }
 
         final User localSnapshot = currentUser;
-        final String localPhotoToKeep = ProfilePhotoStore.isPersistentLocalPath(localSnapshot.profileImageUrl)
-                ? localSnapshot.profileImageUrl
-                : null;
-
+        ProfilePhotoStore.preferLocalPhotoUrl(requireContext(), localSnapshot);
+        sessionManager.saveUserSession(localSnapshot);
         displayUserData();
 
         if (localSnapshot.id != null && !localSnapshot.id.isEmpty()) {
@@ -168,20 +167,13 @@ public class ProfileFragment extends Fragment {
                 requireActivity().runOnUiThread(() -> {
                     if (updatedUser != null) {
                         copySessionProfileExtras(localSnapshot, updatedUser);
-                        if ((updatedUser.profileImageUrl == null || updatedUser.profileImageUrl.isEmpty()
-                                || !updatedUser.profileImageUrl.startsWith("http"))
-                                && localPhotoToKeep != null
-                                && ProfilePhotoStore.isPersistentLocalPath(localPhotoToKeep)) {
-                            updatedUser.profileImageUrl = localPhotoToKeep;
-                        }
+                        ProfilePhotoStore.preferLocalPhotoUrl(requireContext(), updatedUser);
                         currentUser = updatedUser;
                         sessionManager.saveUserSession(currentUser);
                     }
                     displayUserData();
                 });
             }).start();
-        } else {
-            displayUserData();
         }
     }
 
@@ -262,33 +254,37 @@ public class ProfileFragment extends Fragment {
                             : dash);
         }
 
-        if (currentUser.profileImageUrl != null && !currentUser.profileImageUrl.isEmpty()) {
-            try {
-                Object glideModel = ProfilePhotoStore.glideModel(currentUser.profileImageUrl);
-                if (glideModel == null) {
-                    profilePhoto.setVisibility(View.VISIBLE);
-                    profilePhoto.setImageDrawable(null);
-                    profilePhotoAddLabel.setVisibility(View.VISIBLE);
-                } else {
-                    Glide.with(requireContext())
-                            .load(glideModel)
-                            .centerCrop()
-                            .into(profilePhoto);
-                    profilePhoto.setVisibility(View.VISIBLE);
-                    profilePhotoAddLabel.setVisibility(View.GONE);
-                }
-            } catch (Exception e) {
-                profilePhoto.setVisibility(View.VISIBLE);
-                profilePhoto.setImageDrawable(null);
-                profilePhotoAddLabel.setVisibility(View.VISIBLE);
-            }
-        } else {
-            profilePhoto.setVisibility(View.VISIBLE);
-            profilePhoto.setImageDrawable(null);
-            profilePhotoAddLabel.setVisibility(View.VISIBLE);
-        }
+        bindProfilePhoto();
 
         loadLessonCostSummary();
+    }
+
+    private void bindProfilePhoto() {
+        if (currentUser == null) {
+            return;
+        }
+        Object glideModel = ProfilePhotoStore.displayModel(
+                requireContext(), currentUser.id, currentUser.profileImageUrl);
+        if (glideModel != null) {
+            try {
+                com.bumptech.glide.request.RequestOptions options =
+                        new com.bumptech.glide.request.RequestOptions().centerCrop();
+                if (glideModel instanceof File) {
+                    options = options.signature(new ObjectKey(((File) glideModel).lastModified()));
+                }
+                Glide.with(requireContext())
+                        .load(glideModel)
+                        .apply(options)
+                        .into(profilePhoto);
+                profilePhoto.setVisibility(View.VISIBLE);
+                profilePhotoAddLabel.setVisibility(View.GONE);
+                return;
+            } catch (Exception ignored) {
+            }
+        }
+        profilePhoto.setVisibility(View.VISIBLE);
+        profilePhoto.setImageDrawable(null);
+        profilePhotoAddLabel.setVisibility(View.VISIBLE);
     }
 
     private void loadLessonCostSummary() {
@@ -365,7 +361,11 @@ public class ProfileFragment extends Fragment {
         currentUser.profileImageUrl = localPath;
         currentUser.updateTimestamp();
         sessionManager.saveUserSession(currentUser);
-        Glide.with(requireContext()).load(local).centerCrop().into(profilePhoto);
+        Glide.with(requireContext())
+                .load(local)
+                .centerCrop()
+                .signature(new ObjectKey(local.lastModified()))
+                .into(profilePhoto);
         profilePhoto.setVisibility(View.VISIBLE);
         profilePhotoAddLabel.setVisibility(View.GONE);
         Uri uploadUri = Uri.fromFile(local);
@@ -375,12 +375,9 @@ public class ProfileFragment extends Fragment {
             }
             if (result.success && result.customData instanceof User) {
                 User u = (User) result.customData;
+                copySessionProfileExtras(currentUser, u);
+                u.profileImageUrl = localPath;
                 currentUser = u;
-                String url = currentUser.profileImageUrl;
-                if (url == null || url.isEmpty()
-                        || !(url.startsWith("http://") || url.startsWith("https://"))) {
-                    currentUser.profileImageUrl = localPath;
-                }
                 sessionManager.saveUserSession(currentUser);
             }
             if (!result.success && result.message != null) {

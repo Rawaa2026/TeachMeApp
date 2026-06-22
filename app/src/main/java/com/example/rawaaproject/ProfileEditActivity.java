@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.signature.ObjectKey;
 import com.example.rawaaproject.data.SessionManager;
 import com.example.rawaaproject.data.UserRepository;
 import com.example.rawaaproject.models.User;
@@ -95,9 +96,7 @@ public class ProfileEditActivity extends AppCompatActivity {
                 currentUser.profileImageUrl = local.getAbsolutePath();
                 sessionManager.saveUserSession(currentUser);
                 photoUri = Uri.fromFile(local);
-                Glide.with(this).load(local).centerCrop().into(photoView);
-                photoView.setVisibility(View.VISIBLE);
-                addPhotoLabel.setVisibility(View.GONE);
+                showProfilePhoto(local);
             });
 
     private final ActivityResultLauncher<Uri> takePicture =
@@ -118,9 +117,7 @@ public class ProfileEditActivity extends AppCompatActivity {
                 currentUser.profileImageUrl = local.getAbsolutePath();
                 sessionManager.saveUserSession(currentUser);
                 photoUri = Uri.fromFile(local);
-                Glide.with(this).load(local).centerCrop().into(photoView);
-                photoView.setVisibility(View.VISIBLE);
-                addPhotoLabel.setVisibility(View.GONE);
+                showProfilePhoto(local);
             });
 
     private final ActivityResultLauncher<String> requestCameraPermission =
@@ -225,28 +222,40 @@ public class ProfileEditActivity extends AppCompatActivity {
 
         descriptionInput.setText(currentUser.description != null ? currentUser.description : "");
 
-        if (currentUser.profileImageUrl != null && !currentUser.profileImageUrl.isEmpty()) {
+        ProfilePhotoStore.preferLocalPhotoUrl(this, currentUser);
+        bindProfilePhoto();
+    }
+
+    private void bindProfilePhoto() {
+        if (currentUser == null) {
+            return;
+        }
+        Object model = ProfilePhotoStore.displayModel(this, currentUser.id, currentUser.profileImageUrl);
+        if (model != null) {
             try {
-                Object model = ProfilePhotoStore.glideModel(currentUser.profileImageUrl);
-                if (model != null) {
-                    Glide.with(this)
-                            .load(model)
-                            .centerCrop()
-                            .into(photoView);
+                if (model instanceof File) {
+                    showProfilePhoto((File) model);
+                } else {
+                    Glide.with(this).load(model).centerCrop().into(photoView);
                     photoView.setVisibility(View.VISIBLE);
                     addPhotoLabel.setVisibility(View.GONE);
-                } else {
-                    photoView.setVisibility(View.GONE);
-                    addPhotoLabel.setVisibility(View.VISIBLE);
                 }
-            } catch (Exception e) {
-                photoView.setVisibility(View.GONE);
-                addPhotoLabel.setVisibility(View.VISIBLE);
+                return;
+            } catch (Exception ignored) {
             }
-        } else {
-            photoView.setVisibility(View.GONE);
-            addPhotoLabel.setVisibility(View.VISIBLE);
         }
+        photoView.setVisibility(View.GONE);
+        addPhotoLabel.setVisibility(View.VISIBLE);
+    }
+
+    private void showProfilePhoto(File local) {
+        Glide.with(this)
+                .load(local)
+                .centerCrop()
+                .signature(new ObjectKey(local.lastModified()))
+                .into(photoView);
+        photoView.setVisibility(View.VISIBLE);
+        addPhotoLabel.setVisibility(View.GONE);
     }
 
     private void setupStudentBirthPickers() {
@@ -508,20 +517,8 @@ public class ProfileEditActivity extends AppCompatActivity {
 
             userRepository.updateUser(sessionUser, photoUri, result -> {
                 if (result.success) {
-                    if (result.customData instanceof User) {
-                        User u = (User) result.customData;
-                        String url = u.profileImageUrl;
-                        if (url == null || url.isEmpty()
-                                || !(url.startsWith("http://") || url.startsWith("https://"))) {
-                            File f = ProfilePhotoStore.getPhotoFile(ProfileEditActivity.this, u.id);
-                            if (f != null && f.exists()) {
-                                u.profileImageUrl = f.getAbsolutePath();
-                            }
-                        }
-                        sessionManager.saveUserSession(u);
-                    } else {
-                        sessionManager.saveUserSession(sessionUser);
-                    }
+                    ProfilePhotoStore.preferLocalPhotoUrl(ProfileEditActivity.this, sessionUser);
+                    sessionManager.saveUserSession(sessionUser);
                     Toast.makeText(this, "تم تحديث الملف الشخصي", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
