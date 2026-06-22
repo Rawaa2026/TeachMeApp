@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود ProfileFragment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #16a085; background: #fff; padding: 10px; border-right: 5px solid #16a085; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .feature-list { list-style-type: square; margin-right: 20px; }
+        .highlight { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود شاشة الملف الشخصي (ProfileFragment)</h1>
+
+    <div class="explanation">
+        هذه الشاشة مسؤولة عن عرض بيانات المستخدم الحالية (سواء كان معلماً أو طالباً)، وتسمح له بتغيير صورته الشخصية، وتعديل بياناته، وحساب إحصائيات الدروس المالية.
+    </div>
+
+    <!-- 1. setupUserProfile -->
+    <h2>1. جلب وتحديث بيانات المستخدم (setupUserProfile)</h2>
+    <div class="explanation">
+        هذه الدالة تقوم بعملين هامين:
+        <ul>
+            <li>أولاً: تعرض البيانات المحفوظة محلياً فوراً (لسرعة الاستجابة).</li>
+            <li>ثانياً: تفتح "خيطاً" (Thread) في الخلفية لجلب أحدث نسخة من بيانات المستخدم من قاعدة البيانات (Appwrite) للتأكد من أنها محدثة.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void setupUserProfile() {
+    currentUser = sessionManager.getUserSession(); // جلب البيانات من الهاتف
+    displayUserData(); // عرضها فوراً
+
+    new Thread(() -> {
+        // جلب البيانات المحدثة من السيرفر باستخدام المعرف (ID)
+        User updatedUser = userRepository.getUserById(currentUser.id);
+        requireActivity().runOnUiThread(() -> {
+            if (updatedUser != null) {
+                currentUser = updatedUser;
+                sessionManager.saveUserSession(currentUser); // حفظ التحديث
+                displayUserData(); // تحديث الواجهة
+            }
+        });
+    }).start();
+}
+    </code></pre>
+
+    <!-- 2. displayUserData -->
+    <h2>2. عرض البيانات حسب الدور (displayUserData)</h2>
+    <div class="explanation">
+        يستخدم الكود منطقاً ذكياً لإظهار وإخفاء الحقول بناءً على دور المستخدم:
+        <ul class="feature-list">
+            <li>إذا كان <span class="highlight">معلماً</span>: يظهر التخصص، سنوات الخبرة، وسعر الساعة.</li>
+            <li>إذا كان <span class="highlight">طالباً</span>: يظهر تاريخ الميلاد، الصف الدراسي، واسم المدرسة.</li>
+        </ul>
+        كما يتم تغيير الألوان لتناسب هوية الدور (معلم أو طالب).
+    </div>
+    <pre><code>
+if (currentUser.isTeacher()) {
+    teacherExtraBlock.setVisibility(View.VISIBLE); // إظهار حقول المعلم
+    studentExtraBlock.setVisibility(View.GONE);    // إخفاء حقول الطالب
+    profileTeacherSubjects.setText(currentUser.specialization);
+} else {
+    teacherExtraBlock.setVisibility(View.GONE);
+    studentExtraBlock.setVisibility(View.VISIBLE);
+    profileStudentGrade.setText(currentUser.grade);
+}
+    </code></pre>
+
+    <!-- 3. Photo Logic -->
+    <h2>3. إدارة الصورة الشخصية (Camera & Gallery)</h2>
+    <div class="explanation">
+        يحتوي الكود على منطق متكامل للتعامل مع الصور:
+        <ul>
+            <li>استخدام <code>ActivityResultLauncher</code> لفتح الاستوديو أو الكاميرا.</li>
+            <li>حفظ الصورة في ذاكرة الهاتف لسرعة العرض لاحقاً.</li>
+            <li>رفع الصورة إلى سيرفر Appwrite وتحديث رابطها في قاعدة البيانات.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void applyPickedPhoto(Uri uri) {
+    // 1. نسخ الصورة للمجلد المحلي للتطبيق
+    ProfilePhotoStore.copyFromUri(requireContext(), currentUser.id, uri);
+
+    // 2. تحديث الواجهة فوراً بالصورة الجديدة
+    Glide.with(this).load(uri).into(profilePhoto);
+
+    // 3. رفع الصورة للسيرفر وتحديث بيانات المستخدم
+    userRepository.updateUser(currentUser, uri, result -> {
+        // نجاح الرفع...
+    });
+}
+    </code></pre>
+
+    <!-- 4. Lesson Costs -->
+    <h2>4. إحصائيات الدروس (loadLessonCostSummary)</h2>
+    <div class="explanation">
+        دالة برمجية تقوم بحساب المبالغ المالية:
+        <ul>
+            <li>للمعلم: تحسب إجمالي أرباحه من الدروس المنشورة اليوم وإجمالي الأرباح الكلية.</li>
+            <li>للطالب: تحسب تكلفة الدروس التي سجل فيها اليوم والإجمالي.</li>
+        </ul>
+        تستخدم هذه الدالة كلاس مساعد يسمى <code>LessonCostHelper</code> للقيام بالعمليات الحسابية.
+    </div>
+
+    <!-- 5. Logout -->
+    <h2>5. تسجيل الخروج (Logout)</h2>
+    <div class="explanation">
+        عند الضغط على خروج، يتم مسح "الجلسة" (Session) من ذاكرة الهاتف، وإعادة تشغيل النشاط الرئيسي (MainActivity) الذي سيكتشف عدم وجود مستخدم ويوجهه تلقائياً لشاشة تسجيل الدخول.
+    </div>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق البرمجي لملف الملف الشخصي في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

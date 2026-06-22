@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توثيق كود مشروع RawaaProject</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #e67e22;
+            background: #fff;
+            padding: 10px;
+            border-right: 5px solid #e67e22;
+            margin-top: 40px;
+        }
+        .description {
+            background: #dff9fb;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        pre {
+            background: #2d3436;
+            color: #dfe6e9;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+            direction: ltr;
+            text-align: left;
+        }
+        code {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+        .file-path {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>توثيق ملفات الجافا لمشروع TeachMeApp</h1>
+    <p style="text-align: center;">هذا الملف يحتوي على أهم الأكواد البرمجية للمشروع مع شرح وظيفة كل ملف باللغة العربية.</p>
+
+    <!-- الملف الأول -->
+    <section>
+        <h2>1. كلاس الاتصال الرئيسي (DALAppWriteConnection)</h2>
+        <span class="file-path">com.example.rawaaproject.LinkToDb.DALAppWriteConnection</span>
+        <div class="description">
+            هذا الملف هو المسؤول عن الربط بين تطبيق الأندرويد ومنصة Appwrite (Backend). يحتوي على دوال تسجيل الدخول، إنشاء الحسابات، جلب البيانات من الجداول، ورفع الصور للسيرفر.
+        </div>
+        <pre><code>
+package com.example.rawaaproject.LinkToDb;
+// ... (الكود الكامل موجود في المشروع)
+// الكلاس يوفر واجهة موحدة لإدارة:
+// - قواعد البيانات والمستندات
+// - المستخدمين والمصادقة
+// - الملفات والتخزين
+public class DALAppWriteConnection {
+    private static final String PROJECT_ID = "6907334b0035614cd983";
+    // دوال الحفظ والجلب...
+}
+        </code></pre>
+    </section>
+
+    <!-- الملف الثاني -->
+    <section>
+        <h2>2. الشاشة الرئيسية (MainActivity)</h2>
+        <span class="file-path">com.example.rawaaproject.MainActivity</span>
+        <div class="description">
+            تتحكم هذه الشاشة في واجهة المستخدم الأساسية. تقوم بفحص حالة تسجيل الدخول؛ إذا كان المستخدم مسجلاً، تعرض له القائمة السفلية (الرئيسية، المعلم، الطالب، الملف الشخصي) بناءً على دوره.
+        </div>
+        <pre><code>
+public class MainActivity extends AppCompatActivity {
+    protected void onCreate(Bundle savedInstanceState) {
+        // فحص حالة الجلسة
+        if (sessionManager.isLoggedIn()) {
+            showMainContent();
+        } else {
+            showAuth();
+        }
+    }
+}
+        </code></pre>
+    </section>
+
+    <!-- الملف الثالث -->
+    <section>
+        <h2>3. مدير الجلسات (SessionManager)</h2>
+        <span class="file-path">com.example.rawaaproject.data.SessionManager</span>
+        <div class="description">
+            هذا الكلاس مسؤول عن تخزين بيانات المستخدم (مثل ID والبريد والدور) محلياً على الهاتف باستخدام SharedPreferences، لكي لا يحتاج المستخدم لتسجيل الدخول في كل مرة يفتح فيها التطبيق.
+        </div>
+        <pre><code>
+public class SessionManager {
+    public void saveUserSession(User user) {
+        String userJson = gson.toJson(user);
+        prefs.edit().putString(KEY_USER_JSON, userJson).apply();
+    }
+    public boolean isLoggedIn() {
+        return prefs.getBoolean(KEY_LOGGED_IN, false);
+    }
+}
+        </code></pre>
+    </section>
+
+    <!-- الملف الرابع -->
+    <section>
+        <h2>4. نموذج المستخدم (User Model)</h2>
+        <span class="file-path">com.example.rawaaproject.models.User</span>
+        <div class="description">
+            يمثل هذا الكلاس هيكل بيانات المستخدم في قاعدة البيانات، ويحتوي على كافة الحقول مثل الاسم، البريد، الدور (مدرس/طالب)، التخصص، والخبرة.
+        </div>
+        <pre><code>
+public class User implements Serializable {
+    public String id;
+    public String fullName;
+    public String role; // "teacher" أو "student"
+    public String email;
+    // ... بقية الحقول
+}
+        </code></pre>
+    </section>
+
+    <!-- الملف الخامس -->
+    <section>
+        <h2>5. نموذج الدرس (Lesson Model)</h2>
+        <span class="file-path">com.example.rawaaproject.models.Lesson</span>
+        <div class="description">
+            يمثل هيكل الدرس المنشور من قبل المعلم، ويشمل عنوان الدرس، المادة، وقت البدء، والسعر.
+        </div>
+        <pre><code>
+public class Lesson implements Serializable {
+    public String id;
+    public String teacherId;
+    public String subject;
+    public String lessonTitle;
+    public String startAt;
+}
+        </code></pre>
+    </section>
+
+    <p style="text-align: center; margin-top: 50px; color: #7f8c8d;">تم إنشاء هذا التوثيق لمشروع RawaaProject.</p>
+</body>
+</html>

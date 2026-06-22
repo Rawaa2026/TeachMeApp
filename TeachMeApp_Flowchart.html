@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مخطط انتقال الشاشات - TeachMeApp</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f8f9fa; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #333; border-bottom: 2px solid #333; display: inline-block; padding-bottom: 5px; }
+
+        .flowchart-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 800px; }
+
+        .box { width: 220px; padding: 15px; border-radius: 12px; text-align: center; margin: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid; position: relative; }
+        .box-title { font-weight: bold; margin-bottom: 8px; font-size: 1.1em; }
+        .box-desc { font-size: 0.9em; color: #555; }
+
+        /* Colors based on your image */
+        .purple { background-color: #f3e5f5; border-color: #9c27b0; }
+        .blue { background-color: #e3f2fd; border-color: #2196f3; }
+        .green { background-color: #e8f5e9; border-color: #4caf50; }
+        .orange { background-color: #fff3e0; border-color: #ff9800; }
+        .red { background-color: #ffebee; border-color: #f44336; }
+        .cyan { background-color: #e0f7fa; border-color: #00bcd4; }
+        .dark { background-color: #ffffff; border-color: #333; border-style: dashed; }
+
+        .arrow-v { font-size: 24px; color: #333; margin: 5px 0; }
+        .arrow-h { position: absolute; top: 50%; right: -40px; font-size: 24px; }
+
+        .row { display: flex; justify-content: center; align-items: center; width: 100%; position: relative; }
+        .side-row { display: flex; width: 100%; justify-content: space-around; margin-top: 20px; }
+
+        .icon { font-size: 30px; margin-bottom: 10px; display: block; }
+
+        .footer-db { margin-top: 40px; width: 250px; background-color: #fff; border: 2px solid #333; border-radius: 10px; padding: 15px; text-align: center; }
+        .db-icon { font-size: 35px; color: #673ab7; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>◀ ما يلي مخطط للانتقالات بين الشاشات :</h2>
+        <h1>مخطط الانتقالات (حسب شرح تطبيق TeachMeApp)</h1>
+    </div>
+
+    <div class="flowchart-container">
+
+        <!-- 1. Start Screen -->
+        <div class="box purple">
+            <span class="icon">🕒</span>
+            <div class="box-title">1. شاشة البدء</div>
+            <div class="box-desc">(شعار التطبيق)</div>
+        </div>
+
+        <div class="arrow-v">⬇️</div>
+
+        <!-- 2. Login & 3. Register -->
+        <div class="row">
+            <div class="box blue">
+                <span class="icon">👤</span>
+                <div class="box-title">2. تسجيل الدخول</div>
+                <div class="box-desc">(البريد الإلكتروني، كلمة المرور)</div>
+            </div>
+
+            <div style="margin: 0 20px; font-weight: bold; color: #2196f3;">← مستخدم جديد →</div>
+
+            <div class="box blue">
+                <span class="icon">👥</span>
+                <div class="box-title">3. إنشاء حساب جديد</div>
+                <div class="box-desc">(الاسم، البريد، اختيار الدور: مدرس/طالب)</div>
+            </div>
+        </div>
+
+        <div class="arrow-v">⬇️ <small>تسجيل الدخول بنجاح</small></div>
+
+        <!-- 4. Main Screen -->
+        <div class="box green">
+            <span class="icon">🏠</span>
+            <div class="box-title">4. الشاشة الرئيسية</div>
+            <div class="box-desc">(ملخص الجدول + الدروس القادمة)</div>
+        </div>
+
+        <!-- Sub Screens -->
+        <div class="side-row">
+            <!-- 5. Hub -->
+            <div class="box orange">
+                <span class="icon">📋</span>
+                <div class="box-title">5. مركز التحكم (Hub)</div>
+                <div class="box-desc">(تصفح الدروس، المدرسين، دروسي الخاصة)</div>
+            </div>
+
+            <!-- 6. Add Lesson -->
+            <div class="box red">
+                <span class="icon">➕</span>
+                <div class="box-title">6. شاشة إضافة درس</div>
+                <div class="box-desc">(إضافة درس جديد، المادة، الموعد، السعر)</div>
+            </div>
+
+            <!-- 7. Profile -->
+            <div class="box cyan">
+                <span class="icon">⚙️</span>
+                <div class="box-title">7. شاشة الملف الشخصي</div>
+                <div class="box-desc">(تعديل البيانات، الصورة، تسجيل الخروج)</div>
+            </div>
+        </div>
+
+        <div class="arrow-v">⬇️ <small>حفظ / جلب البيانات</small></div>
+
+        <!-- Database -->
+        <div class="footer-db">
+            <div class="db-icon">📊</div>
+            <div class="box-title">قاعدة البيانات</div>
+            <div class="box-desc">(AppWrite Cloud Storage)</div>
+        </div>
+
+    </div>
+
+    <div style="margin-top: 30px; font-size: 0.8em; color: #888; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
+        <strong>مفتاح المخطط:</strong><br>
+        ━━ انتقال مباشر | ---- عودة/رجوع | 🔵 حفظ واسترجاع بيانات
+    </div>
+
+</body>
+</html>

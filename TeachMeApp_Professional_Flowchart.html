@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مخطط TeachMeApp الاحترافي</title>
+    <style>
+        :root {
+            --primary-bg: #f0f2f5;
+            --splash-color: #6c5ce7;
+            --auth-color: #0984e3;
+            --main-color: #00b894;
+            --hub-color: #fdcb6e;
+            --action-color: #d63031;
+            --profile-color: #00cec9;
+            --db-color: #2d3436;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            color: #2d3436;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        header p {
+            color: #636e72;
+            font-size: 1.2em;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            width: 250px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: white;
+        }
+
+        .card h3 {
+            margin: 10px 0;
+            font-size: 1.2em;
+            color: #2d3436;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #636e72;
+            line-height: 1.4;
+        }
+
+        /* Connectors */
+        .arrow {
+            font-size: 24px;
+            color: #b2bec3;
+            margin: 10px 0;
+        }
+
+        .horizontal-flow {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            width: 100%;
+            justify-content: center;
+            position: relative;
+        }
+
+        .grid-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Specific Colors */
+        .bg-splash { background: linear-gradient(135deg, #a29bfe, var(--splash-color)); }
+        .bg-auth { background: linear-gradient(135deg, #74b9ff, var(--auth-color)); }
+        .bg-main { background: linear-gradient(135deg, #55efc4, var(--main-color)); }
+        .bg-hub { background: linear-gradient(135deg, #ffeaa7, var(--hub-color)); }
+        .bg-action { background: linear-gradient(135deg, #ff7675, var(--action-color)); }
+        .bg-profile { background: linear-gradient(135deg, #81ecec, var(--profile-color)); }
+        .bg-db { background: linear-gradient(135deg, #636e72, var(--db-color)); }
+
+        .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #2d3436;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .connector-line {
+            height: 2px;
+            background: #dfe6e9;
+            flex-grow: 1;
+            position: relative;
+        }
+
+        .connector-line::after {
+            content: "◀";
+            position: absolute;
+            left: -5px;
+            top: -10px;
+            color: #dfe6e9;
+        }
+
+        /* Key Legend */
+        .legend {
+            margin-top: 60px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>مخطط المسار الذكي لتطبيق TeachMeApp</h1>
+        <p>تصميم مخصص يوضح رحلة المستخدم (المعلم والطالب) داخل النظام</p>
+    </header>
+
+    <div class="container">
+
+        <!-- 1. Splash -->
+        <div class="card">
+            <div class="badge">البداية</div>
+            <div class="icon-circle bg-splash">🚀</div>
+            <h3>شاشة الترحيب</h3>
+            <p>تهيئة التطبيق وعرض الشعار (SplashActivity)</p>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- 2. Auth Flow -->
+        <div class="horizontal-flow">
+            <div class="card">
+                <div class="icon-circle bg-auth">🔓</div>
+                <h3>تسجيل الدخول</h3>
+                <p>الدخول بالبريد الإلكتروني وكلمة المرور</p>
+            </div>
+
+            <div style="text-align: center; min-width: 100px;">
+                <div style="font-size: 0.8em; color: #636e72; margin-bottom: 5px;">مستخدم جديد؟</div>
+                <div style="font-size: 24px;">↔️</div>
+            </div>
+
+            <div class="card">
+                <div class="icon-circle bg-auth">📝</div>
+                <h3>إنشاء حساب</h3>
+                <p>اختيار الدور (معلم/طالب) وتعبئة البيانات الأساسية</p>
+            </div>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- 3. Main Dashboard -->
+        <div class="card" style="width: 350px; border: 2px solid var(--main-color);">
+            <div class="badge" style="background: var(--main-color);">المركز الرئيسي</div>
+            <div class="icon-circle bg-main">🏠</div>
+            <h3>الشاشة الرئيسية (Home)</h3>
+            <p>عرض ملخص الحصص القادمة والجدول الزمني الذكي</p>
+        </div>
+
+        <div class="arrow" style="font-size: 40px;">📂</div>
+
+        <!-- 4. Feature Grid -->
+        <div class="grid-row">
+            <!-- Hub -->
+            <div class="card">
+                <div class="icon-circle bg-hub">🏛️</div>
+                <h3>مركز الخدمات (Hub)</h3>
+                <p>تصفح المدرسين (للطالب) <br> أو إدارة الطلبات (للمعلم)</p>
+            </div>
+
+            <!-- Action -->
+            <div class="card">
+                <div class="icon-circle bg-action">✨</div>
+                <h3>إضافة درس جديد</h3>
+                <p>خاص بالمعلم: تحديد المادة، الموعد، السعر والوقت</p>
+            </div>
+
+            <!-- Profile -->
+            <div class="card">
+                <div class="icon-circle bg-profile">⚙️</div>
+                <h3>الملف الشخصي</h3>
+                <p>تعديل البيانات، الصورة الشخصية، وتسجيل الخروج</p>
+            </div>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- 5. Database -->
+        <div class="card" style="background: #2d3436; color: white;">
+            <div class="icon-circle bg-db" style="background: white; color: #2d3436;">☁️</div>
+            <h3 style="color: white;">قاعدة بيانات Appwrite</h3>
+            <p style="color: #b2bec3;">تخزين سحابي آمن لجميع بيانات المعلمين والطلاب والدروس</p>
+        </div>
+
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-item"><div class="dot" style="background: var(--splash-color);"></div> مرحلة التحميل</div>
+        <div class="legend-item"><div class="dot" style="background: var(--auth-color);"></div> الهوية والأمان</div>
+        <div class="legend-item"><div class="dot" style="background: var(--main-color);"></div> قلب التطبيق</div>
+        <div class="legend-item"><div class="dot" style="background: #2d3436;"></div> التخزين السحابي</div>
+    </div>
+
+</body>
+</html>

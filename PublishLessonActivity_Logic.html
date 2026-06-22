@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود PublishLessonActivity</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #fdfdfd; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #e67e22; background: #fff; padding: 10px; border-right: 5px solid #e67e22; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #d35400; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود شاشة نشر درس جديد (PublishLessonActivity)</h1>
+
+    <div class="explanation">
+        هذه الشاشة مخصصة للمعلمين فقط، حيث تسمح لهم بإدخال تفاصيل الدرس الجديد (المادة، العنوان، الوقت، والسعر) ونشره ليظهر للطلاب في التطبيق.
+    </div>
+
+    <!-- 1. Subject Spinner -->
+    <h2>1. اختيار المادة (Subject Spinner)</h2>
+    <div class="explanation">
+        عند بدء الشاشة، يتم ملء قائمة منسدلة (Spinner) بجميع المواد المتاحة للتدريس من ملف الموارد (Strings/Arrays).
+    </div>
+    <pre><code>
+ArrayAdapter&lt;CharSequence&gt; adapter = ArrayAdapter.createFromResource(this,
+        R.array.teacher_subjects, android.R.layout.simple_spinner_dropdown_item);
+subjectSpinner.setAdapter(adapter);
+    </code></pre>
+
+    <!-- 2. Date & Time Picker -->
+    <h2>2. اختيار التاريخ والوقت (DateTime Picker)</h2>
+    <div class="explanation">
+        يوفر الكود تجربة مستخدم سلسة؛ عند الضغط على زر اختيار الوقت، يظهر أولاً تقويم لاختيار اليوم (DatePicker)، وفور الاختيار يظهر منبه لاختيار الساعة (TimePicker). ثم يتم تحويل الاختيار إلى تنسيق <code>ZonedDateTime</code>.
+    </div>
+    <pre><code>
+private void showDateThenTimePicker() {
+    DatePickerDialog dateDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+        // بعد اختيار التاريخ، يفتح اختيار الوقت مباشرة
+        TimePickerDialog timeDialog = new TimePickerDialog(this, (tv, hourOfDay, minute) -> {
+            // دمج التاريخ والوقت في كائن واحد
+            LocalDateTime ldt = LocalDateTime.of(date, time);
+            chosenStart = ldt.atZone(ZoneId.systemDefault());
+            datetimeSummary.setText(formatChosen(chosenStart));
+        }, ...);
+        timeDialog.show();
+    }, ...);
+    dateDialog.show();
+}
+    </code></pre>
+
+    <!-- 3. Validation and Submit -->
+    <h2>3. التحقق والنشر (submitLesson)</h2>
+    <div class="explanation">
+        قبل إرسال البيانات لقاعدة البيانات، يقوم الكود بعدة فحوصات أمان:
+        <ul>
+            <li>التأكد من أن المستخدم مسجل كـ <span class="highlight">معلم</span>.</li>
+            <li>التأكد من أن عنوان الدرس ليس فارغاً.</li>
+            <li>التأكد من اختيار تاريخ ووقت الدرس.</li>
+            <li><span class="highlight">الأهم:</span> التأكد من أن وقت الدرس في المستقبل وليس في الماضي.</li>
+        </ul>
+        إذا نجحت الفحوصات، يتم استدعاء <code>LessonRepository</code> لحفظ الدرس في Appwrite.
+    </div>
+    <pre><code>
+private void submitLesson() {
+    // التحقق من عنوان الدرس
+    if (title.isEmpty()) { ... return; }
+
+    // التحقق من أن الوقت في المستقبل
+    if (!LessonRepository.isStartAtInFuture(iso)) {
+        Toast.makeText(this, "يجب اختيار وقت في المستقبل", Toast.LENGTH_SHORT).show();
+        return;
+    }
+
+    // إرسال البيانات للمستودع (Repository) للحفظ
+    new LessonRepository(this).publishLesson(teacherId, subj, title, iso, price, result -> {
+        if (result.success) {
+            Toast.makeText(this, "تم نشر الدرس بنجاح", Toast.LENGTH_SHORT).show();
+            finish(); // إغلاق الشاشة والعودة
+        }
+    });
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق البرمجي لشاشة نشر الدروس في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

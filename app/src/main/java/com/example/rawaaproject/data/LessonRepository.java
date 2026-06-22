@@ -34,7 +34,7 @@ public class LessonRepository {
 
     /** updatedAt مطلوب؛ lessonPrice اختياري — cancelled يُحدَّث عند الإلغاء فقط */
     private static final String SCHEMA_LESSONS =
-            "teacherId:string:true:t,subject:string:true:s,lessonTitle:string:true:lt,startAt:string:true:sa,updatedAt:string:true:u,lessonPrice:string:false:lp";
+            "teacherId:string:true:t,subject:string:true:s,lessonTitle:string:true:lt,startAt:string:true:sa,updatedAt:string:true:u,lessonPrice:string:false:lp,cancelled:string:false:c";
     private static final String SCHEMA_ENROLLMENTS =
             "lessonId:string:true:l,studentId:string:true:st,status:string:true:ss";
 
@@ -43,19 +43,29 @@ public class LessonRepository {
     private final Executor io = Executors.newCachedThreadPool();
     private final Handler main = new Handler(Looper.getMainLooper());
 
+    private static boolean collectionsEnsured = false;
+
     public LessonRepository(Context context) {
         this.context = context.getApplicationContext();
         this.dal = new DALAppWriteConnection(this.context);
     }
 
     private void ensureCollections() {
+        if (collectionsEnsured) return;
         try {
             if (!dal.tableExists(TABLE_LESSONS, null)) {
                 dal.createTable(TABLE_LESSONS, null, SCHEMA_LESSONS);
+            } else {
+                // التأكد من وجود جميع الحقول في حالة تم تحديث الـ schema في الكود
+                dal.createTableAttributes(TABLE_LESSONS, SCHEMA_LESSONS, TABLE_LESSONS);
             }
+
             if (!dal.tableExists(TABLE_ENROLLMENTS, null)) {
                 dal.createTable(TABLE_ENROLLMENTS, null, SCHEMA_ENROLLMENTS);
+            } else {
+                dal.createTableAttributes(TABLE_ENROLLMENTS, SCHEMA_ENROLLMENTS, TABLE_ENROLLMENTS);
             }
+            collectionsEnsured = true;
         } catch (Exception e) {
             Log.w(TAG, "ensureCollections", e);
         }

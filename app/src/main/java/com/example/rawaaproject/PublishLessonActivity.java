@@ -1,8 +1,8 @@
 package com.example.rawaaproject;
 
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -13,30 +13,32 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.rawaaproject.data.LessonRepository;
 import com.example.rawaaproject.data.SessionManager;
+import com.example.rawaaproject.util.BirthDateSpinners;
+import com.example.rawaaproject.util.LessonScheduleSpinners;
 import com.example.rawaaproject.util.RoleThemeHelper;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class PublishLessonActivity extends AppCompatActivity {
 
     private Spinner subjectSpinner;
     private TextInputEditText titleInput;
     private TextView datetimeSummary;
-    private MaterialButton pickDatetime;
+    private Spinner yearSpinner;
+    private Spinner monthSpinner;
+    private Spinner daySpinner;
+    private Spinner hourSpinner;
+    private Spinner minuteSpinner;
     private MaterialButton submit;
     private MaterialButton cancel;
     private TextInputEditText priceInput;
-
-    @Nullable
-    private ZonedDateTime chosenStart;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,17 +53,21 @@ public class PublishLessonActivity extends AppCompatActivity {
         subjectSpinner = findViewById(R.id.publish_subject_spinner);
         titleInput = findViewById(R.id.publish_lesson_title_input);
         datetimeSummary = findViewById(R.id.publish_datetime_summary);
-        pickDatetime = findViewById(R.id.publish_pick_datetime);
+        yearSpinner = findViewById(R.id.publish_year_spinner);
+        monthSpinner = findViewById(R.id.publish_month_spinner);
+        daySpinner = findViewById(R.id.publish_day_spinner);
+        hourSpinner = findViewById(R.id.publish_hour_spinner);
+        minuteSpinner = findViewById(R.id.publish_minute_spinner);
         submit = findViewById(R.id.publish_submit);
         cancel = findViewById(R.id.publish_cancel);
         priceInput = findViewById(R.id.publish_lesson_price_input);
 
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+        ArrayAdapter<CharSequence> subjectAdapter = ArrayAdapter.createFromResource(this,
                 R.array.teacher_subjects, android.R.layout.simple_spinner_dropdown_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        subjectSpinner.setAdapter(adapter);
+        subjectAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        subjectSpinner.setAdapter(subjectAdapter);
 
-        pickDatetime.setOnClickListener(v -> showDateThenTimePicker());
+        setupDateTimeSpinners();
 
         submit.setOnClickListener(v -> submitLesson());
         cancel.setOnClickListener(v -> finish());
@@ -73,24 +79,108 @@ public class PublishLessonActivity extends AppCompatActivity {
         return true;
     }
 
-    private void showDateThenTimePicker() {
-        Calendar cal = Calendar.getInstance();
-        DatePickerDialog dateDialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-            TimePickerDialog timeDialog = new TimePickerDialog(this, (tv, hourOfDay, minute) -> {
-                LocalDate date = LocalDate.of(year, month + 1, dayOfMonth);
-                LocalTime time = LocalTime.of(hourOfDay, minute);
-                LocalDateTime ldt = LocalDateTime.of(date, time);
-                chosenStart = ldt.atZone(ZoneId.systemDefault());
-                datetimeSummary.setText(formatChosen(chosenStart));
-            }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true);
-            timeDialog.show();
-        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH));
-        dateDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
-        dateDialog.show();
+    private void setupDateTimeSpinners() {
+        BirthDateSpinners.setupYear(this, yearSpinner, R.array.lesson_schedule_years, R.string.birth_year_prompt);
+        BirthDateSpinners.setupMonth(this, monthSpinner, R.string.birth_month_prompt);
+        BirthDateSpinners.setupDays(this, daySpinner, R.string.birth_day_prompt, 31);
+
+        LessonScheduleSpinners.setupHour(this, hourSpinner, R.string.lesson_hour);
+        LessonScheduleSpinners.setupMinute(this, minuteSpinner, R.string.lesson_minute);
+
+        enableSpinnerTouch(subjectSpinner);
+        enableSpinnerTouch(yearSpinner);
+        enableSpinnerTouch(monthSpinner);
+        enableSpinnerTouch(daySpinner);
+        enableSpinnerTouch(hourSpinner);
+        enableSpinnerTouch(minuteSpinner);
+
+        Calendar now = Calendar.getInstance();
+        String today = String.format(
+                Locale.US,
+                "%04d-%02d-%02d",
+                now.get(Calendar.YEAR),
+                now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.DAY_OF_MONTH));
+        BirthDateSpinners.selectFromStored(this, yearSpinner, monthSpinner, daySpinner, today, R.string.birth_day_prompt);
+        LessonScheduleSpinners.selectHour(hourSpinner, now.get(Calendar.HOUR_OF_DAY));
+        LessonScheduleSpinners.selectMinute(minuteSpinner, now.get(Calendar.MINUTE));
+
+        AdapterView.OnItemSelectedListener dateListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                BirthDateSpinners.refreshDaySpinner(
+                        PublishLessonActivity.this,
+                        yearSpinner,
+                        monthSpinner,
+                        daySpinner,
+                        R.string.birth_day_prompt);
+                updateSummary();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        };
+        yearSpinner.setOnItemSelectedListener(dateListener);
+        monthSpinner.setOnItemSelectedListener(dateListener);
+
+        AdapterView.OnItemSelectedListener summaryListener = new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateSummary();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        };
+        daySpinner.setOnItemSelectedListener(summaryListener);
+        hourSpinner.setOnItemSelectedListener(summaryListener);
+        minuteSpinner.setOnItemSelectedListener(summaryListener);
+
+        updateSummary();
+    }
+
+    private void enableSpinnerTouch(Spinner spinner) {
+        LessonScheduleSpinners.enableDropdownTouch(spinner);
+    }
+
+    @Nullable
+    private ZonedDateTime readChosenStart() {
+        String dateIso = BirthDateSpinners.toIsoDateOrNull(yearSpinner, monthSpinner, daySpinner);
+        Integer hour = LessonScheduleSpinners.selectedHour(hourSpinner);
+        Integer minute = LessonScheduleSpinners.selectedMinute(minuteSpinner);
+        if (dateIso == null || hour == null || minute == null) {
+            return null;
+        }
+        String[] parts = dateIso.split("-");
+        LocalDateTime ldt = LocalDateTime.of(
+                Integer.parseInt(parts[0]),
+                Integer.parseInt(parts[1]),
+                Integer.parseInt(parts[2]),
+                hour,
+                minute);
+        return ldt.atZone(ZoneId.systemDefault());
+    }
+
+    private void updateSummary() {
+        ZonedDateTime chosen = readChosenStart();
+        if (chosen == null) {
+            datetimeSummary.setText(R.string.lesson_datetime_not_set);
+            return;
+        }
+        datetimeSummary.setText(formatChosen(chosen));
     }
 
     private String formatChosen(ZonedDateTime z) {
-        return z.toLocalDate().toString() + " " + z.toLocalTime().withSecond(0).withNano(0);
+        return String.format(
+                Locale.getDefault(),
+                "%04d-%02d-%02d  %02d:%02d",
+                z.getYear(),
+                z.getMonthValue(),
+                z.getDayOfMonth(),
+                z.getHour(),
+                z.getMinute());
     }
 
     private void submitLesson() {
@@ -107,15 +197,19 @@ public class PublishLessonActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.lesson_topic_required, Toast.LENGTH_SHORT).show();
             return;
         }
+
+        ZonedDateTime chosenStart = readChosenStart();
         if (chosenStart == null) {
             Toast.makeText(this, R.string.lesson_datetime_required, Toast.LENGTH_SHORT).show();
             return;
         }
+
         String iso = chosenStart.toInstant().toString();
         if (!LessonRepository.isStartAtInFuture(iso)) {
             Toast.makeText(this, R.string.lesson_time_must_be_future, Toast.LENGTH_SHORT).show();
             return;
         }
+
         submit.setEnabled(false);
         String teacherId = sm.getCurrentUser().id;
         String price = priceInput.getText() != null ? priceInput.getText().toString().trim() : "";

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود ScheduleFragment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #2980b9; background: #fff; padding: 10px; border-right: 5px solid #2980b9; margin-top: 30px; border-radius: 4px; }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود شاشة الجدول الزمني (ScheduleFragment)</h1>
+
+    <div class="explanation">
+        هذه الشاشة مسؤولة عن عرض "الجدول الزمني" الخاص بالمستخدم، حيث تعرض الدروس المعتمدة (المقبولة) سواء كان المستخدم معلماً أو طالباً.
+    </div>
+
+    <!-- 1. load logic -->
+    <h2>1. جلب بيانات الجدول (load)</h2>
+    <div class="explanation">
+        تقوم دالة <code>load()</code> بتحديد نوع المستخدم الحالي من الجلسة (Session)، وبناءً عليه تستدعي الدالة المناسبة من المستودع (Repository):
+        <ul>
+            <li>إذا كان <span class="highlight">معلماً</span>: تجلب الدروس التي يدرسها وتم قبول طلاب فيها.</li>
+            <li>إذا كان <span class="highlight">طالباً</span>: تجلب الدروس التي سجل فيها وتم قبوله.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void load() {
+    User u = session.getCurrentUser();
+    progress.setVisibility(View.VISIBLE);
+    if (u.isTeacher()) {
+        repo.loadTeacherSchedule(u.id, result -> {
+            ArrayList&lt;Lesson&gt; list = result.data;
+            bindList(list, false); // false تعني عدم الحاجة لجلب أسماء مدرسين لأنني المدرس
+        });
+    } else {
+        repo.loadStudentSchedule(u.id, result -> {
+            ArrayList&lt;Lesson&gt; list = result.data;
+            bindList(list, true); // true تعني جلب أسماء المدرسين لكل درس
+        });
+    }
+}
+    </code></pre>
+
+    <!-- 2. bindList and Background Thread -->
+    <h2>2. ربط البيانات ومعالجة المدرسين (bindList)</h2>
+    <div class="explanation">
+        عندما يكون المستخدم طالباً، نحتاج لعرض اسم المعلم ورقم هاتفه. بما أن كائن الدرس يحتوي فقط على معرف المعلم (teacherId)، نستخدم خيطاً (Thread) خلفياً لجلب هذه البيانات لكل درس لضمان عدم بطء الواجهة.
+    </div>
+    <pre><code>
+private void bindList(ArrayList&lt;Lesson&gt; lessons, boolean showTeacher) {
+    items.clear();
+    items.addAll(lessons);
+    if (showTeacher && !items.isEmpty()) {
+        new Thread(() -> {
+            // جلب أسماء وأرقام هواتف المدرسين من UserRepository في الخلفية
+            for (Lesson l : lessonsSnapshot) {
+                User t = ur.getUserById(l.teacherId);
+                teacherNames.put(l.teacherId, t.getDisplayName());
+                teacherPhones.put(l.teacherId, t.phoneNumber);
+            }
+            // تحديث الواجهة بعد انتهاء الجلب
+            root.post(() -> adapter.notifyDataSetChanged());
+        }).start();
+    } else {
+        adapter.notifyDataSetChanged();
+    }
+}
+    </code></pre>
+
+    <!-- 3. Cancellation logic -->
+    <h2>3. منطق الإلغاء (Cancel Logic)</h2>
+    <div class="explanation">
+        تحتوي الشاشة على دوال للإلغاء تختلف باختلاف الدور:
+        <ul>
+            <li><code>cancelLesson</code>: يستخدمها المعلم لإلغاء الحصة بالكامل.</li>
+            <li><code>cancelEnrollment</code>: يستخدمها الطالب لإلغاء تسجيله في الحصة.</li>
+        </ul>
+        يتم التحقق أولاً من أن وقت الدرس لم يبدأ بعد باستخدام <code>canCancelBeforeLessonStart</code>.
+    </div>
+    <pre><code>
+private void cancelLesson(Lesson lesson) {
+    repo.cancelLessonByTeacher(lesson.id, u.id, r -> {
+        Toast.makeText(getContext(), "تم إلغاء الدرس بنجاح", Toast.LENGTH_LONG).show();
+        load(); // إعادة تحميل الجدول بعد الإلغاء
+    });
+}
+    </code></pre>
+
+    <!-- 4. UI logic in Adapter -->
+    <h2>4. التحكم في شكل البطاقة (onBindViewHolder)</h2>
+    <div class="explanation">
+        يتم تخصيص شكل البطاقة ديناميكياً:
+        <ul>
+            <li>إذا كانت الحصة "اليوم"، يظهر شعار (Today Badge).</li>
+            <li>إذا كانت الحصة قديمة (Past)، يتم وضع خط على النصوص (Strike Through) لتبدو منتهية.</li>
+            <li>زر الإلغاء يظهر فقط إذا كانت الحصة في المستقبل ولم تبدأ بعد.</li>
+        </ul>
+    </div>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق البرمجي لملف الجدول الزمني في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

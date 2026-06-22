@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>نسخة الوورد - TeachMeApp</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: white; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; scale: 0.9; }
+        .container { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 850px; border: 1px solid #eee; padding: 20px; border-radius: 15px; }
+        .card { background: white; border-radius: 15px; padding: 12px; width: 180px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: 2px solid; }
+        .icon { font-size: 24px; margin-bottom: 5px; }
+        h3 { margin: 5px 0; font-size: 1em; }
+        p { margin: 0; font-size: 0.8em; color: #555; }
+
+        .arrow { font-size: 18px; color: #888; }
+        .row { display: flex; gap: 20px; align-items: center; }
+
+        .purple { border-color: #9c27b0; background: #fdf7ff; }
+        .blue { border-color: #2196f3; background: #f0f7ff; }
+        .green { border-color: #4caf50; background: #f4fff5; }
+        .orange { border-color: #ff9800; background: #fffaf2; }
+        .red { border-color: #f44336; background: #fff5f5; }
+        .cyan { border-color: #00bcd4; background: #f0ffff; }
+        .dark { border-color: #333; background: #f9f9f9; width: 220px; }
+
+        .header { text-align: center; margin-bottom: 10px; }
+        .header h2 { margin: 0; color: #333; font-size: 1.4em; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>مخطط انتقال الشاشات - مشروع TeachMeApp</h2>
+    </div>
+
+    <div class="container">
+        <!-- Step 1 -->
+        <div class="card purple">
+            <div class="icon">🕒</div>
+            <h3>1. شاشة البدء</h3>
+            <p>شعار التطبيق</p>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- Step 2 & 3 -->
+        <div class="row">
+            <div class="card blue">
+                <div class="icon">👤</div>
+                <h3>2. تسجيل الدخول</h3>
+                <p>البريد وكلمة المرور</p>
+            </div>
+            <div class="arrow">↔️</div>
+            <div class="card blue">
+                <div class="icon">📝</div>
+                <h3>3. إنشاء حساب</h3>
+                <p>مدرس أو طالب</p>
+            </div>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- Step 4 -->
+        <div class="card green" style="width: 250px;">
+            <div class="icon">🏠</div>
+            <h3>4. الشاشة الرئيسية</h3>
+            <p>ملخص الجدول والدروس</p>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- Steps 5, 6, 7 -->
+        <div class="row">
+            <div class="card orange">
+                <div class="icon">🏛️</div>
+                <h3>5. مركز التحكم</h3>
+                <p>تصفح وإدارة الدروس</p>
+            </div>
+            <div class="card red">
+                <div class="icon">➕</div>
+                <h3>6. إضافة درس</h3>
+                <p>تحديد الموعد والسعر</p>
+            </div>
+            <div class="card cyan">
+                <div class="icon">⚙️</div>
+                <h3>7. الملف الشخصي</h3>
+                <p>تعديل البيانات والخروج</p>
+            </div>
+        </div>
+
+        <div class="arrow">⬇️</div>
+
+        <!-- DB -->
+        <div class="card dark">
+            <div class="icon">☁️</div>
+            <h3>قاعدة البيانات (Appwrite)</h3>
+            <p>تخزين سحابي لكافة البيانات</p>
+        </div>
+    </div>
+
+</body>
+</html>

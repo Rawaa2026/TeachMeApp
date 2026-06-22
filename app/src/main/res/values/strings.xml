@@ -149,6 +149,13 @@
     <string name="lesson_datetime_label">التاريخ والوقت</string>
     <string name="lesson_datetime_not_set">لم يُحدد بعد — اختر التاريخ والوقت</string>
     <string name="lesson_pick_datetime">اختر التاريخ والوقت</string>
+    <string name="lesson_pick_date">اختر تاريخ الدرس</string>
+    <string name="lesson_pick_time">اختر وقت الدرس</string>
+    <string name="lesson_year">السنة</string>
+    <string name="lesson_month">الشهر</string>
+    <string name="lesson_day">اليوم</string>
+    <string name="lesson_hour">الساعة</string>
+    <string name="lesson_minute">الدقيقة</string>
     <string name="lesson_datetime_required">حدد تاريخاً ووقتاً للدرس</string>
     <string name="lesson_time_must_be_future">يجب أن يكون وقت الدرس في المستقبل (بعد دقيقة على الأقل)</string>
     <string name="lesson_join_already">لديك طلب أو انضمام لهذا الدرس مسبقاً</string>

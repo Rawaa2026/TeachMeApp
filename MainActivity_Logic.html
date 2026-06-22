@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود MainActivity</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #2980b9; background: #fff; padding: 10px; border-right: 5px solid #2980b9; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود الشاشة الرئيسية (MainActivity)</h1>
+
+    <div class="explanation">
+        تعتبر <code>MainActivity</code> هي الواجهة الرئيسية والمنسق الأساسي للتطبيق، حيث تتحكم في عرض واجهة تسجيل الدخول أو واجهة التطبيق الرئيسية بناءً على حالة المستخدم.
+    </div>
+
+    <!-- 1. onCreate -->
+    <h2>1. البداية والتحقق (onCreate)</h2>
+    <div class="explanation">
+        عند بدء النشاط، يتم القيام بعدة أمور:
+        <ul>
+            <li>تطبيق "الثيم" المناسب بناءً على دور المستخدم (معلم/طالب) عبر <code>RoleThemeHelper</code>.</li>
+            <li>التحقق من حالة تسجيل الدخول عبر <code>SessionManager</code>.</li>
+            <li>إذا كان المستخدم مسجلاً، يتم استدعاء <code>showMainContent()</code>، وإلا يتم استدعاء <code>showAuth()</code> لعرض صفحة الدخول.</li>
+        </ul>
+    </div>
+    <pre><code>
+protected void onCreate(Bundle savedInstanceState) {
+    RoleThemeHelper.applyForLoggedInUser(this); // تطبيق الألوان حسب الدور
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    sessionManager = new SessionManager(this);
+
+    if (sessionManager.isLoggedIn()) {
+        showMainContent(); // عرض محتوى التطبيق
+    } else {
+        showAuth(); // عرض واجهة الدخول
+    }
+}
+    </code></pre>
+
+    <!-- 2. showAuth -->
+    <h2>2. واجهة تسجيل الدخول (showAuth)</h2>
+    <div class="explanation">
+        تقوم هذه الدالة "بنفخ" (Inflate) واجهة تسجيل الدخول داخل الإطار الرئيسي (content_frame).
+        <ul>
+            <li>تقوم بإخفاء شريط التنقل السفلي.</li>
+            <li>تربط أزرار الدخول والتسجيل بالعمليات البرمجية.</li>
+            <li>عند نجاح الدخول، يتم حفظ الجلسة وإعادة تشغيل النشاط لتحديث الواجهة بالكامل.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void showAuth() {
+    bottomNav.setVisibility(View.GONE); // إخفاء القائمة السفلية
+    authView = getLayoutInflater().inflate(R.layout.layout_auth, contentFrame, false);
+    contentFrame.addView(authView);
+
+    loginBtn.setOnClickListener(v -> {
+        // تنفيذ عملية تسجيل الدخول عبر AuthRepository
+        authRepository.login(emailTxt, passwordTxt, result -> {
+            if (result.success) {
+                sessionManager.saveUserSession(user);
+                recreate(); // إعادة تشغيل لتطبيق الثيم والواجهة الجديدة
+            }
+        });
+    });
+}
+    </code></pre>
+
+    <!-- 3. showMainContent -->
+    <h2>3. واجهة التطبيق الرئيسية (showMainContent)</h2>
+    <div class="explanation">
+        بعد تسجيل الدخول، يتم عرض الواجهة التي تحتوي على:
+        <ul>
+            <li><b>شريط التنقل السفلي (BottomNavigationView):</b> يتم تغيير أيقونات القائمة ديناميكياً؛ فإذا كان المستخدم معلماً تظهر خيارات المعلم، وإذا كان طالباً تظهر خيارات الطالب.</li>
+            <li><b>عرض الـ Fragments:</b> يتم تحميل <code>HomeFragment</code> كواجهة افتراضية.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void showMainContent() {
+    bottomNav.setVisibility(View.VISIBLE);
+    User sessionUser = sessionManager.getCurrentUser();
+
+    // تغيير القائمة حسب الدور
+    if (sessionUser != null && sessionUser.isTeacher()) {
+        bottomNav.inflateMenu(R.menu.bottom_nav_teacher);
+    } else {
+        bottomNav.inflateMenu(R.menu.bottom_nav_student);
+    }
+
+    showFragment(new HomeFragment()); // عرض الشاشة الرئيسية الافتراضية
+}
+    </code></pre>
+
+    <!-- 4. Navigation -->
+    <h2>4. التنقل بين الشاشات (Navigation)</h2>
+    <div class="explanation">
+        يتم الاستماع لضغطات المستخدم على القائمة السفلية، وبناءً على العنصر المختار يتم تغيير "العنوان" في الأعلى وتبديل "الـ Fragment" المعروض في منتصف الشاشة.
+    </div>
+    <pre><code>
+bottomNav.setOnItemSelectedListener(item -> {
+    int id = item.getItemId();
+    if (id == R.id.nav_home) {
+        setToolbarTitle(R.string.nav_home);
+        showFragment(new HomeFragment());
+    } else if (id == R.id.nav_teacher_hub) {
+        showFragment(new TeacherHubFragment());
+    }
+    // ... بقية الخيارات
+    return true;
+});
+    </code></pre>
+
+    <!-- 5. showFragment -->
+    <h2>5. دالة تبديل الشاشات (showFragment)</h2>
+    <div class="explanation">
+        دالة مساعدة تستخدم <code>FragmentManager</code> لتبديل المحتوى داخل <code>content_frame</code> بسلاسة.
+    </div>
+    <pre><code>
+private void showFragment(Fragment fragment) {
+    getSupportFragmentManager().beginTransaction()
+            .replace(R.id.content_frame, fragment)
+            .commit();
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق البرمجي لـ MainActivity في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

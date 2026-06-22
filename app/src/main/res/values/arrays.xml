@@ -30,6 +30,15 @@
         <item>1990</item>
     </string-array>
 
+    <!-- سنوات نشر الدرس (من الحالية فما بعد) -->
+    <string-array name="lesson_schedule_years">
+        <item>2026</item>
+        <item>2027</item>
+        <item>2028</item>
+        <item>2029</item>
+        <item>2030</item>
+    </string-array>
+
     <!-- الصف من الأول إلى الثاني عشر -->
     <string-array name="student_grades_1_12">
         <item>الأول</item>

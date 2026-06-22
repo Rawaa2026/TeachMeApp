@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح نموذج LessonEnrollment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #e67e22; background: #fff; padding: 10px; border-right: 5px solid #e67e22; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #d35400; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود نموذج تسجيل الدروس (LessonEnrollment)</h1>
+
+    <div class="explanation">
+        هذا الكلاس (Model) يمثل "طلب التسجيل" الذي يرسله الطالب للمعلم للانضمام إلى درس معين. هو الرابط الأساسي بين الطالب والدرس في قاعدة البيانات.
+    </div>
+
+    <!-- 1. Constants -->
+    <h2>1. حالات الطلب الثابتة (Status Constants)</h2>
+    <div class="explanation">
+        يحتوي الكود على مجموعة من القيم الثابتة التي تحدد حالة الطلب في أي لحظة. استخدام الكلمات الثابتة يمنع الأخطاء الإملائية في الكود ويجعله أكثر تنظيماً:
+        <ul>
+            <li><span class="highlight">STATUS_PENDING</span>: الطلب قيد الانتظار (بانتظار موافقة المعلم).</li>
+            <li><span class="highlight">STATUS_APPROVED</span>: تم قبول الطالب في الدرس.</li>
+            <li><span class="highlight">STATUS_REJECTED</span>: تم رفض الطلب من قبل المعلم.</li>
+            <li><span class="highlight">STATUS_CANCELLED</span>: تم إلغاء الطلب (من قبل الطالب أو المعلم).</li>
+        </ul>
+    </div>
+    <pre><code>
+public static final String STATUS_PENDING = "pending";
+public static final String STATUS_APPROVED = "approved";
+public static final String STATUS_REJECTED = "rejected";
+public static final String STATUS_CANCELLED = "cancelled";
+    </code></pre>
+
+    <!-- 2. Fields -->
+    <h2>2. الحقول الأساسية (Fields)</h2>
+    <div class="explanation">
+        يمثل كل حقل معلومة ضرورية لإتمام عملية التسجيل:
+        <ul>
+            <li><code>id</code>: المعرف الفريد لهذا التسجيل في قاعدة البيانات.</li>
+            <li><code>lessonId</code>: معرف الدرس الذي يريد الطالب الانضمام إليه.</li>
+            <li><code>studentId</code>: معرف الطالب الذي أرسل الطلب.</li>
+            <li><code>status</code>: الحالة الحالية للطلب (تأخذ إحدى القيم الثابتة أعلاه).</li>
+        </ul>
+    </div>
+    <pre><code>
+public String id;
+public String lessonId;
+public String studentId;
+public String status;
+    </code></pre>
+
+    <!-- 3. Constructor -->
+    <h2>3. المنشئ الافتراضي (Constructor)</h2>
+    <div class="explanation">
+        عند إنشاء أي طلب تسجيل جديد، يتم ضبط الحالة تلقائياً لتكون <span class="highlight">"pending"</span> (قيد الانتظار) كقيمة افتراضية حتى يقوم المعلم بتغييرها لاحقاً.
+    </div>
+    <pre><code>
+public LessonEnrollment() {
+    this.status = STATUS_PENDING; // الحالة الافتراضية هي قيد الانتظار
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق لنموذج تسجيل الدروس في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

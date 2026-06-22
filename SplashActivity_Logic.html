@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود SplashActivity</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #8e44ad; background: #fff; padding: 10px; border-right: 5px solid #8e44ad; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود شاشة البداية (SplashActivity)</h1>
+
+    <div class="explanation">
+        شاشة البداية أو الـ Splash Screen هي أول ما يراه المستخدم عند فتح التطبيق. وظيفتها الأساسية هي عرض شعار التطبيق (Logo) لتعزيز العلامة التجارية أثناء تهيئة التطبيق في الخلفية.
+    </div>
+
+    <!-- 1. Delay Constant -->
+    <h2>1. وقت العرض (SPLASH_DELAY_MS)</h2>
+    <div class="explanation">
+        يتم تحديد مدة بقاء الشاشة ظاهرة بالملي ثانية. في كود مشروعك، تم ضبطها على <span class="highlight">2500 ملي ثانية</span> (أي ثانيتين ونصف).
+    </div>
+    <pre><code>
+private static final long SPLASH_DELAY_MS = 2500L;
+    </code></pre>
+
+    <!-- 2. Animations -->
+    <h2>2. الحركات والأنيميشن (Animations)</h2>
+    <div class="explanation">
+        لإضفاء لمسة جمالية، يتم تحميل حركات برمجية من مجلد الـ <code>res/anim</code> وتطبيقها على شعار التطبيق والنصوص.
+        <ul>
+            <li><code>splash_scale_in</code>: حركة تكبير للشعار.</li>
+            <li><code>splash_fade_in</code>: حركة ظهور تدريجي للنصوص.</li>
+        </ul>
+    </div>
+    <pre><code>
+logo.startAnimation(AnimationUtils.loadAnimation(this, R.anim.splash_scale_in));
+appName.startAnimation(AnimationUtils.loadAnimation(this, R.anim.splash_fade_in));
+tagline.startAnimation(AnimationUtils.loadAnimation(this, R.anim.splash_fade_in));
+    </code></pre>
+
+    <!-- 3. Navigation Logic -->
+    <h2>3. الانتقال التلقائي (Handler)</h2>
+    <div class="explanation">
+        يتم استخدام الـ <code>Handler</code> لانتظار الوقت المحدد (ثانيتين ونصف) ثم تنفيذ أمر الانتقال إلى الشاشة التالية.
+        <ul>
+            <li><code>Intent</code>: هو الأمر البرمجي المسؤول عن الانتقال بين الشاشات.</li>
+            <li><code>finish()</code>: وظيفتها "إغلاق" شاشة البداية تماماً بعد الانتقال، لكي لا يعود إليها المستخدم إذا ضغط على زر "الرجوع".</li>
+        </ul>
+    </div>
+    <pre><code>
+new Handler(Looper.getMainLooper()).postDelayed(() -> {
+    // الانتقال إلى الشاشة الرئيسية (MainActivity)
+    startActivity(new Intent(this, MainActivity.class));
+
+    // إغلاق شاشة البداية
+    finish();
+}, SPLASH_DELAY_MS);
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق لملف شاشة البداية في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

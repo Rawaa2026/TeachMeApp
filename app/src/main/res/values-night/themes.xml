@@ -15,6 +15,38 @@
         <item name="colorSecondary">#94A3B8</item>
         <item name="colorOnSecondary">#0F172A</item>
         <item name="android:statusBarColor">#1E1E1E</item>
+
+        <!-- تغيير نوع الخط وحجمه (زيادة بنسبة 15% تقريباً) -->
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="textAppearanceHeadlineLarge">@style/AppTextAppearance.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/AppTextAppearance.HeadlineMedium</item>
+        <item name="textAppearanceTitleLarge">@style/AppTextAppearance.TitleLarge</item>
+        <item name="textAppearanceBodyLarge">@style/AppTextAppearance.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/AppTextAppearance.BodyMedium</item>
+        <item name="textAppearanceLabelLarge">@style/AppTextAppearance.LabelLarge</item>
+
+        <item name="android:datePickerDialogTheme">@style/App.DatePickerDialog</item>
+        <item name="android:timePickerDialogTheme">@style/App.TimePickerDialog</item>
+    </style>
+
+    <!-- تعريف أنماط النصوص المخصصة بحجم أكبر -->
+    <style name="AppTextAppearance.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:textSize">37sp</item>
+    </style>
+    <style name="AppTextAppearance.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">32sp</item>
+    </style>
+    <style name="AppTextAppearance.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">25sp</item>
+    </style>
+    <style name="AppTextAppearance.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="AppTextAppearance.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textSize">16sp</item>
+    </style>
+    <style name="AppTextAppearance.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">16sp</item>
     </style>
 
     <style name="Theme.RawaaProject" parent="Base.Theme.RawaaProject" />

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود StudentHubFragment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #2980b9; background: #fff; padding: 10px; border-right: 5px solid #2980b9; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود مركز الطالب (StudentHubFragment)</h1>
+
+    <div class="explanation">
+        يعتبر <code>StudentHubFragment</code> هو "المقر الرئيسي" للطالب داخل التطبيق. وظيفته الأساسية هي تنظيم المحتوى الموجه للطالب (مثل تصفح الدروس، البحث عن مدرسين، والجدول الزمني) في مكان واحد باستخدام نظام <b>التبويبات (Tabs)</b>.
+    </div>
+
+    <!-- 1. Layout Inflation -->
+    <h2>1. ربط الواجهة (onCreateView)</h2>
+    <div class="explanation">
+        تقوم هذه الدالة بربط كود الجافا بملف التصميم <code>fragment_role_hub</code>. تم تصميم هذا الملف ليكون مرناً بحيث يحتوي على شريط تبويبات (TabLayout) ومساحة لعرض الصفحات (ViewPager2).
+    </div>
+    <pre><code>
+@Nullable
+@Override
+public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                         @Nullable Bundle savedInstanceState) {
+    // نفخ واجهة الـ Hub الموحدة
+    return inflater.inflate(R.layout.fragment_role_hub, container, false);
+}
+    </code></pre>
+
+    <!-- 2. ViewPager & Adapter -->
+    <h2>2. إعداد محول الصفحات (FragmentStateAdapter)</h2>
+    <div class="explanation">
+        داخل دالة <code>onViewCreated</code>، نقوم ببرمجة الـ <code>ViewPager2</code>. هذا المكون هو المسؤول عن السماح للطالب بـ "السحب" (Swipe) بين الصفحات.
+        المحول يحدد أي صفحة تظهر بناءً على الترتيب:
+        <ul>
+            <li>الترتيب 0: يفتح <span class="highlight">StudentLessonsFragment</span> (لتصفح الدروس).</li>
+            <li>الترتيب 1: يفتح <span class="highlight">StudentTeachersFragment</span> (للبحث عن مدرسين).</li>
+            <li>الترتيب 2: يفتح <span class="highlight">ScheduleFragment</span> (لعرض الجدول الزمني الشخصي).</li>
+        </ul>
+    </div>
+    <pre><code>
+pager.setAdapter(new FragmentStateAdapter(this) {
+    @NonNull
+    @Override
+    public Fragment createFragment(int position) {
+        switch (position) {
+            case 0: return new StudentLessonsFragment();
+            case 1: return new StudentTeachersFragment();
+            case 2: default: return new ScheduleFragment();
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return 3; // إجمالي عدد الصفحات في مركز الطالب
+    }
+});
+    </code></pre>
+
+    <!-- 3. TabLayoutMediator -->
+    <h2>3. ربط العناوين بالتبويبات (TabLayoutMediator)</h2>
+    <div class="explanation">
+        هذا الجزء هو "المترجم" الذي يضع الأسماء الصحيحة فوق كل صفحة. يقوم بربط نص العنوان القادم من ملف النصوص (Strings) بالتبويب المقابل له في شريط التبويبات.
+    </div>
+    <pre><code>
+tabMediator = new TabLayoutMediator(tabs, pager, (tab, position) -> {
+    if (position == 0) {
+        tab.setText(R.string.nav_browse_lessons); // "تصفح الدروس"
+    } else if (position == 1) {
+        tab.setText(R.string.nav_teachers_by_subject); // "المعلمون"
+    } else {
+        tab.setText(R.string.nav_schedule); // "الجدول"
+    }
+});
+tabMediator.attach(); // ربط وتفعيل التبويبات مع الصفحات
+    </code></pre>
+
+    <!-- 4. Destruction Cleanup -->
+    <h2>4. الحفاظ على موارد النظام (onDestroyView)</h2>
+    <div class="explanation">
+        عندما ينتقل الطالب لشاشة أخرى (مثل الملف الشخصي)، يتم استدعاء هذه الدالة. نقوم هنا بفصل <code>tabMediator</code> لضمان عدم استهلاك الذاكرة بدون داعٍ، مما يحافظ على سرعة التطبيق.
+    </div>
+    <pre><code>
+@Override
+public void onDestroyView() {
+    if (tabMediator != null) {
+        tabMediator.detach(); // فصل الوسيط
+        tabMediator = null;
+    }
+    super.onDestroyView();
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق البرمجي لمركز الطالب في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود SessionManager</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f8f9fa; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #27ae60; background: #fff; padding: 10px; border-right: 5px solid #27ae60; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود مدير الجلسات (SessionManager)</h1>
+
+    <div class="explanation">
+        يعتبر <code>SessionManager</code> هو المسؤول عن إبقاء المستخدم مسجلاً للدخول حتى بعد إغلاق التطبيق. يقوم بحفظ بيانات المستخدم بشكل دائم على ذاكرة الهاتف باستخدام تقنية <b>SharedPreferences</b>.
+    </div>
+
+    <!-- 1. Initialization -->
+    <h2>1. التهيئة (Initialization)</h2>
+    <div class="explanation">
+        عند إنشاء نسخة من هذا الكلاس، يتم تجهيز <code>SharedPreferences</code> لتخزين البيانات، ومكتبة <code>Gson</code> لتحويل كائن المستخدم (Object) إلى نص (JSON) وبالعكس.
+    </div>
+    <pre><code>
+public SessionManager(Context context) {
+    // PREFS_NAME هو اسم الملف الصغير الذي سيحفظ البيانات في ذاكرة الهاتف
+    prefs = context.getApplicationContext().getSharedPreferences("rawaa_session", Context.MODE_PRIVATE);
+    gson = new GsonBuilder().create();
+}
+    </code></pre>
+
+    <!-- 2. saveUserSession -->
+    <h2>2. حفظ بيانات الجلسة (saveUserSession)</h2>
+    <div class="explanation">
+        هذه الدالة تأخذ كائن المستخدم بالكامل، تحوله إلى نص JSON، وتخزنه في ذاكرة الهاتف. كما تقوم بتخزين القيم الأساسية (مثل ID والدور) بشكل منفصل لسهولة الوصول إليها.
+    </div>
+    <pre><code>
+public void saveUserSession(User user) {
+    if (user == null) return;
+
+    // تحويل كائن المستخدم إلى نص JSON
+    String userJson = gson.toJson(user);
+
+    // حفظ البيانات في الإعدادات
+    prefs.edit()
+            .putBoolean("logged_in", true) // علامة تدل على أن المستخدم مسجل دخول
+            .putString("user_json", userJson)
+            .putString("user_id", user.id)
+            .putString("user_role", user.role)
+            .apply(); // تنفيذ الحفظ
+}
+    </code></pre>
+
+    <!-- 3. getCurrentUser -->
+    <h2>3. استرجاع المستخدم الحالي (getCurrentUser)</h2>
+    <div class="explanation">
+        عندما يحتاج التطبيق لمعرفة من هو المستخدم الحالي، تقوم هذه الدالة بقراءة نص الـ JSON المخزن، وتحويله مجدداً إلى كائن <code>User</code>. كما تحتوي على نظام "تحقق" (Validation) للتأكد من أن البيانات ليست تالفة.
+    </div>
+    <pre><code>
+public User getCurrentUser() {
+    if (!isLoggedIn()) return null;
+
+    String userJson = prefs.getString("user_json", null);
+    if (userJson != null) {
+        // تحويل النص مجدداً إلى كائن جافا
+        User user = gson.fromJson(userJson, User.class);
+        return validateUser(user); // التأكد من صحة الحقول
+    }
+    return null;
+}
+    </code></pre>
+
+    <!-- 4. Helper Checkers -->
+    <h2>4. دوال التحقق السريع</h2>
+    <div class="explanation">
+        يوفر الكود دوالاً بسيطة لمعرفة حالة المستخدم بسرعة دون الحاجة لجلب كامل بياناته:
+        <ul>
+            <li><code>isLoggedIn()</code>: هل المستخدم مسجل دخوله حالياً؟</li>
+            <li><code>isCurrentUserTeacher()</code>: هل المستخدم الحالي معلم؟</li>
+            <li><code>isCurrentUserStudent()</code>: هل المستخدم الحالي طالب؟</li>
+        </ul>
+    </div>
+
+    <!-- 5. clearSession -->
+    <h2>5. تسجيل الخروج (clearSession)</h2>
+    <div class="explanation">
+        عندما يضغط المستخدم على "تسجيل الخروج"، تقوم هذه الدالة بمسح كافة البيانات المخزنة في الذاكرة المحلية، مما يجعل التطبيق يطلب تسجيل الدخول مرة أخرى في المرة القادمة.
+    </div>
+    <pre><code>
+public void clearSession() {
+    prefs.edit()
+            .putBoolean("logged_in", false) // إلغاء علامة تسجيل الدخول
+            .remove("user_json") // حذف بيانات المستخدم
+            .remove("user_id")
+            .apply();
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق البرمجي لمدير الجلسات في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

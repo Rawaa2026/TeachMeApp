@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود ProfileEditActivity</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f5f6fa; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #2980b9; background: #fff; padding: 10px; border-right: 5px solid #2980b9; margin-top: 30px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .highlight { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود شاشة تعديل الملف الشخصي (ProfileEditActivity)</h1>
+
+    <div class="explanation">
+        هذه الشاشة تسمح للمستخدمين (سواء كانوا معلمين أو طلاباً) بتعديل بياناتهم الشخصية، تغيير صورهم، وتحديث تخصصاتهم أو صفوفهم الدراسية.
+    </div>
+
+    <!-- 1. Photo Handling -->
+    <h2>1. إدارة الصور (الكاميرا والمعرض)</h2>
+    <div class="explanation">
+        تستخدم الشاشة نظام <code>ActivityResultLauncher</code> الحديث لاختيار الصور. عند اختيار صورة من المعرض أو التقاطها، يتم حفظ نسخة منها محلياً في مجلد التطبيق باستخدام <code>ProfilePhotoStore</code> لضمان سرعتها الدائمة، ثم يتم عرضها باستخدام مكتبة <b>Glide</b>.
+    </div>
+    <pre><code>
+// لاقط الصور من الاستوديو
+private final ActivityResultLauncher&lt;String&gt; pickImage =
+    registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+        if (uri != null) {
+            // حفظ الصورة محلياً وتحديث الواجهة
+            ProfilePhotoStore.copyFromUri(this, currentUser.id, uri);
+            Glide.with(this).load(uri).centerCrop().into(photoView);
+        }
+    });
+    </code></pre>
+
+    <!-- 2. Role-Based UI -->
+    <h2>2. تخصيص الواجهة حسب الدور (معلم/طالب)</h2>
+    <div class="explanation">
+        بناءً على نوع حساب المستخدم المسجل في الجلسة (Session)، يقوم الكود بإظهار أو إخفاء حقول معينة:
+        <ul>
+            <li><span class="highlight">للمعلم:</span> تظهر حقول التخصص، سنوات الخبرة، وسعر الحصة.</li>
+            <li><span class="highlight">للطلاب:</span> تظهر حقول تاريخ الميلاد (مع منقيات التاريخ)، الصف الدراسي، واسم المدرسة.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void loadUserData() {
+    currentUser = sessionManager.getUserSession();
+    if (currentUser.isTeacher()) {
+        teacherFields.setVisibility(View.VISIBLE); // إظهار حقول المعلم
+        studentFields.setVisibility(View.GONE);    // إخفاء حقول الطالب
+        setupExperienceYearsSpinner(); // تهيئة قائمة سنوات الخبرة
+    } else {
+        teacherFields.setVisibility(View.GONE);
+        studentFields.setVisibility(View.VISIBLE);
+        setupStudentBirthPickers(); // تهيئة قوائم تاريخ الميلاد
+    }
+}
+    </code></pre>
+
+    <!-- 3. Multi-Choice Dialog -->
+    <h2>3. اختيار التخصصات المتعددة (لللمعلمين)</h2>
+    <div class="explanation">
+        يوفر الكود واجهة حوار (Dialog) تسمح للمعلم باختيار أكثر من مادة دراسية يتقنها. بعد الاختيار، يتم دمج هذه المواد في نص واحد مفصول بأسطر وحفظها.
+    </div>
+    <pre><code>
+private void showTeacherSubjectsPickDialog() {
+    new MaterialAlertDialogBuilder(this)
+        .setTitle("اختر التخصصات")
+        .setMultiChoiceItems(subjectLabels, state, (dialog, which, isChecked) -> {
+            state[which] = isChecked;
+        })
+        .setPositiveButton("موافق", (d, w) -> {
+            // دمج المواد المختارة وتحديث الملخص على الشاشة
+            refreshTeacherSubjectsSummary();
+        })
+        .show();
+}
+    </code></pre>
+
+    <!-- 4. Save Logic -->
+    <h2>4. منطق حفظ البيانات والتحقق</h2>
+    <div class="explanation">
+        دالة <code>saveProfile()</code> هي المسؤولة عن الجمع والتحقق النهائي:
+        <ul>
+            <li>التحقق من أن الاسم والهاتف ليسوا فارغين.</li>
+            <li>التحقق من أن عمر الطالب لا يقل عن 7 سنوات.</li>
+            <li>استدعاء <code>userRepository.updateUser</code> لإرسال البيانات المحدثة والصورة الجديدة إلى السيرفر.</li>
+            <li>تحديث بيانات "الجلسة" (Session) محلياً ليعكس التغييرات فوراً في بقية التطبيق.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void saveProfile() {
+    // 1. جمع البيانات من الواجهة
+    sessionUser.fullName = fullNameInput.getText().toString();
+
+    // 2. استدعاء المستودع للتحديث في السحاب
+    userRepository.updateUser(sessionUser, photoUri, result -> {
+        if (result.success) {
+            // 3. حفظ النسخة الجديدة في الجلسة المحلية
+            sessionManager.saveUserSession(sessionUser);
+            Toast.makeText(this, "تم التحديث بنجاح", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    });
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا التوثيق البرمجي لشاشة تعديل الملف الشخصي في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

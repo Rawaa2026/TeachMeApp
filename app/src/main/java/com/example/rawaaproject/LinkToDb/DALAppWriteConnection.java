@@ -2237,7 +2237,7 @@ public class DALAppWriteConnection {
      * @param schema تعريف schema بصيغة "name:type:required:label,name2:type2:required2:label2"
      * @param tableName اسم الجدول
      */
-    private void createTableAttributes(String collectionId, String schema, String tableName) {
+    public void createTableAttributes(String collectionId, String schema, String tableName) {
         try {
             String[] attributes = schema.split(",");
             for (String attribute : attributes) {

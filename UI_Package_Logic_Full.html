@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح حزمة UI - TeachMeApp</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1100px; margin: 0 auto; padding: 20px; background-color: #f0f2f5; }
+        h1 { color: #1a237e; text-align: center; border-bottom: 4px solid #1a237e; padding-bottom: 10px; }
+        h2 { color: #c62828; background: #fff; padding: 15px; border-right: 6px solid #c62828; margin-top: 40px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #263238; color: #eceff1; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 13px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .file-name { font-weight: bold; color: #1565c0; font-size: 1.2em; display: block; margin-bottom: 10px; }
+        nav { position: sticky; top: 0; background: white; padding: 10px; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; border-radius: 5px; }
+        nav a { margin-left: 15px; text-decoration: none; color: #1a237e; font-weight: bold; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <h1>توثيق حزمة واجهات المستخدم (UI Package) لمشروع TeachMeApp</h1>
+
+    <nav>
+        <strong>انتقال سريع:</strong>
+        <a href="#home">الرئيسية</a>
+        <a href="#hubs">المراكز (Hubs)</a>
+        <a href="#lessons">الدروس</a>
+        <a href="#requests">الطلبات</a>
+        <a href="#profile">الملف الشخصي</a>
+        <a href="#adapter">المحولات (Adapters)</a>
+    </nav>
+
+    <!-- 1. HomeFragment -->
+    <h2 id="home">1. الشاشة الرئيسية (HomeFragment)</h2>
+    <div class="explanation">
+        <span class="file-name">HomeFragment.java</span>
+        هذه هي واجهة الهبوط الأولى للمستخدم بعد تسجيل الدخول. وظيفتها عرض جدول الحصص "المعتمدة" فقط لليوم وللمستقبل.
+        <ul>
+            <li>تقوم بفحص دور المستخدم (معلم أو طالب).</li>
+            <li>تجلب قائمة الدروس المقبولة من المستودع.</li>
+            <li>تعرض تنبيهاً في حال كان الجدول فارغاً.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void loadScheduleTable() {
+    User u = session.getCurrentUser();
+    if (u.isTeacher()) {
+        lessonRepo.loadTeacherSchedule(u.id, result -> {
+            // عرض حصص المعلم المعتمدة
+            bindScheduleCards(result.data, false, ...);
+        });
+    } else {
+        lessonRepo.loadStudentSchedule(u.id, result -> {
+            // عرض حصص الطالب المقبول فيها
+            bindScheduleCards(result.data, true, ...);
+        });
+    }
+}
+    </code></pre>
+
+    <!-- 2. Hubs -->
+    <h2 id="hubs">2. مراكز التحكم (StudentHub & TeacherHub)</h2>
+    <div class="explanation">
+        <span class="file-name">StudentHubFragment.java & TeacherHubFragment.java</span>
+        هذه الملفات تستخدم نظام <b>ViewPager2</b> و <b>TabLayout</b> لتنظيم المحتوى.
+        <ul>
+            <li><b>مركز الطالب:</b> يحتوي على تبويبات (تصفح الدروس، البحث عن مدرسين، الجدول الزمني).</li>
+            <li><b>مركز المعلم:</b> يحتوي على تبويبات (دروسي، الجدول الزمني، طلبات الانضمام).</li>
+        </ul>
+    </div>
+    <pre><code>
+// كود مشترك لتنظيم التبويبات (Tabs)
+pager.setAdapter(new FragmentStateAdapter(this) {
+    public Fragment createFragment(int position) {
+        if (position == 0) return new StudentLessonsFragment();
+        if (position == 1) return new StudentTeachersFragment();
+        return new ScheduleFragment();
+    }
+    public int getItemCount() { return 3; }
+});
+    </code></pre>
+
+    <!-- 3. Lessons Flow -->
+    <h2 id="lessons">3. إدارة تصفح الدروس (StudentLessonsFragment)</h2>
+    <div class="explanation">
+        <span class="file-name">StudentLessonsFragment.java</span>
+        هذه الشاشة هي "سوق الدروس" للطالب.
+        <ul>
+            <li>تسمح بتصفية الدروس حسب المادة (Spinner).</li>
+            <li>تعرض حالة كل درس (طلب انضمام، قيد المراجعة، تم القبول).</li>
+            <li>تسمح للطالب بإرسال طلب انضمام جديد بنقرة زر.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void requestJoin(Lesson lesson) {
+    repo.requestJoin(lesson.id, u.id, r -> {
+        Toast.makeText(getContext(), "تم إرسال الطلب", Toast.LENGTH_SHORT).show();
+        reload(); // تحديث القائمة فوراً
+    });
+}
+    </code></pre>
+
+    <!-- 4. Teacher Requests -->
+    <h2 id="requests">4. إدارة طلبات الطلاب (TeacherRequestsFragment)</h2>
+    <div class="explanation">
+        <span class="file-name">TeacherRequestsFragment.java</span>
+        واجهة خاصة بالمعلم لمراجعة الطلاب الذين يريدون الانضمام لدروسه.
+        <ul>
+            <li>يعرض اسم الطالب والدرس المطلوب.</li>
+            <li>يوفر زرين: <b>قبول (Approve)</b> أو <b>رفض (Reject)</b>.</li>
+            <li>عند القبول، تظهر الحصة تلقائياً في جدول الطالب والمعلم في الصفحة الرئيسية.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void approve(LessonEnrollment e) {
+    repo.setEnrollmentStatus(e.id, LessonEnrollment.STATUS_APPROVED, u.id, r -> {
+        Toast.makeText(getContext(), "تم قبول الطالب", Toast.LENGTH_SHORT).show();
+        load(); // تحديث القائمة
+    });
+}
+    </code></pre>
+
+    <!-- 5. Profile -->
+    <h2 id="profile">5. الملف الشخصي (ProfileFragment)</h2>
+    <div class="explanation">
+        <span class="file-name">ProfileFragment.java</span>
+        عرض بيانات المستخدم الشاملة.
+        <ul>
+            <li>يعرض الصورة الشخصية والبيانات الأساسية.</li>
+            <li>يعرض إحصائيات (الأرباح للمعلم / التكاليف للطالب).</li>
+            <li>يوفر خيار تسجيل الخروج وتعديل البيانات.</li>
+        </ul>
+    </div>
+
+    <!-- 6. Adapters -->
+    <h2 id="adapter">6. محولات البيانات (Adapters)</h2>
+    <div class="explanation">
+        <span class="file-name">HomeScheduleAdapter.java</span>
+        هذا الكلاس هو المسؤول عن "رسم" كل بطاقة درس في القوائم.
+        <ul>
+            <li>يحدد لون البطاقة وحالة الأزرار.</li>
+            <li>يضع علامة "اليوم" على الحصص الحالية.</li>
+            <li>يشطب على الحصص القديمة (Strike-through).</li>
+        </ul>
+    </div>
+    <pre><code>
+public void onBindViewHolder(@NonNull VH h, int position) {
+    Lesson l = lessons.get(position);
+    // تنسيق شكل البطاقة بناءً على حالة الدرس ووقت بدايته
+    LessonScheduleCardStyle.apply(h.card, l);
+    h.time.setText(LessonUiHelper.formatStartAt(l.startAt));
+
+    // إخفاء أو إظهار زر الإلغاء بناءً على الوقت المتبقي
+    boolean canCancel = LessonRepository.canCancelBeforeLessonStart(l.startAt);
+    h.cancel.setVisibility(canCancel ? View.VISIBLE : View.GONE);
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d; font-size: 0.9em;">
+        تم استخراج وتوثيق كافة أكواد حزمة الواجهات لمشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

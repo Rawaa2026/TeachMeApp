@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح كود StudentLessonsFragment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #2980b9; background: #fff; padding: 10px; border-right: 5px solid #2980b9; margin-top: 30px; border-radius: 4px; }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #2d3436; color: #dfe6e9; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 14px; direction: ltr; text-align: left; }
+        code { font-family: 'Consolas', monospace; }
+        .tech-tag { display: inline-block; background: #e67e22; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.8em; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>شرح كود شاشة دروس الطلاب (StudentLessonsFragment)</h1>
+
+    <div class="explanation">
+        هذه الشاشة هي المسؤولة عن عرض الدروس المتاحة للطالب، حيث يمكنه البحث عن دروس حسب المادة، طلب الانضمام لدرس، أو إلغاء طلب سابق.
+    </div>
+
+    <!-- 1. reload logic -->
+    <h2>1. منطق تحديث البيانات (دالة reload)</h2>
+    <div class="explanation">
+        تعتبر هذه الدالة "العقل" المفكر لهذه الشاشة. تقوم بعدة عمليات متسلسلة:
+        <ul>
+            <li>أولاً: تجلب طلبات الانضمام الخاصة بالطالب الحالي (enrollments) لتعرف حالة كل درس بالنسبة له.</li>
+            <li>ثانياً: تجلب قائمة الدروس القادمة (Upcoming Lessons) مع تطبيق "فلتر" المادة إذا اختاره الطالب.</li>
+            <li>ثالثاً: تقوم بتشغيل خيط (Thread) خلفي لجلب أسماء وأرقام هواتف المدرسين لكل درس لضمان عدم تعليق واجهة المستخدم.</li>
+        </ul>
+    </div>
+    <pre><code>
+private void reload() {
+    progress.setVisibility(View.VISIBLE);
+    // 1. جلب التسجيلات الخاصة بي
+    repo.listEnrollments(er -> {
+        // ... تصفية التسجيلات الخاصة بالطالب
+
+        // 2. جلب الدروس القادمة بناءً على المادة المختارة
+        repo.listUpcomingLessons(subjectFilter, lr -> {
+            // ... تحديث قائمة الدروس (items)
+
+            // 3. جلب بيانات المدرسين في الخلفية
+            new Thread(() -> {
+                for (Lesson l : lessonsSnapshot) {
+                    User t = userRepo.getUserById(l.teacherId);
+                    teacherNames.put(l.teacherId, t.getDisplayName());
+                }
+                // تحديث الواجهة بعد انتهاء الجلب
+                root.post(() -> adapter.notifyDataSetChanged());
+            }).start();
+        });
+    });
+}
+    </code></pre>
+
+    <!-- 2. requestJoin -->
+    <h2>2. طلب الانضمام لدرس (دالة requestJoin)</h2>
+    <div class="explanation">
+        عندما يضغط الطالب على زر "طلب انضمام"، يتم إرسال معرف الدرس ومعرف الطالب إلى المستودع (Repository) ليقوم بإنشاء سجل جديد في قاعدة البيانات بحالة "قيد الانتظار" (Pending).
+    </div>
+    <pre><code>
+private void requestJoin(Lesson lesson) {
+    repo.requestJoin(lesson.id, u.id, r -> {
+        Toast.makeText(getContext(), "تم إرسال طلب الانضمام", Toast.LENGTH_LONG).show();
+        reload(); // إعادة تحميل البيانات لتحديث حالة الزر
+    });
+}
+    </code></pre>
+
+    <!-- 3. UI logic -->
+    <h2>3. منطق عرض الأزرار (في الـ Adapter)</h2>
+    <div class="explanation">
+        الكود يقوم بتغيير شكل ونصوص الأزرار ديناميكياً بناءً على حالة الدرس:
+        <ul>
+            <li><b>إذا كان الدرس قديماً:</b> يظهر زر "انتهى الدرس" ويكون معطلاً.</li>
+            <li><b>إذا كان الطلب مقبولاً:</b> يظهر نص "تم التسجيل".</li>
+            <li><b>إذا كان الطلب قيد الانتظار:</b> يظهر زر "إلغاء الطلب" وزر آخر مكتوب عليه "قيد المراجعة".</li>
+            <li><b>إذا لم يطلب الطالب بعد:</b> يظهر زر "طلب انضمام" مفعّل.</li>
+        </ul>
+    </div>
+    <pre><code>
+// منطق تحديد حالة الزر داخل onBindViewHolder
+if (LessonEnrollment.STATUS_PENDING.equals(st)) {
+    h.action.setText("قيد المراجعة");
+    h.action.setEnabled(false);
+    h.cancel.setVisibility(View.VISIBLE); // إظهار زر الإلغاء
+} else if (LessonEnrollment.STATUS_APPROVED.equals(st)) {
+    h.action.setText("تم التسجيل");
+    h.action.setEnabled(false);
+} else {
+    h.action.setText("طلب انضمام");
+    h.action.setOnClickListener(v -> requestJoin(l));
+}
+    </code></pre>
+
+    <!-- 4. Filter logic -->
+    <h2>4. تصفية الدروس حسب المادة (Spinner)</h2>
+    <div class="explanation">
+        يحتوي الجزء العلوي من الشاشة على قائمة منسدلة (Spinner). عند اختيار مادة معينة، يتم تخزينها في متغير <code>subjectFilter</code> واستدعاء دالة <code>reload()</code> لجلب الدروس المتعلقة بهذه المادة فقط.
+    </div>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d;">
+        تم استخراج هذا الشرح لبرمجة شاشة الطلاب في مشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>

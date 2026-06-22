@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شرح طبقة البيانات (Repositories) - TeachMeApp</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 1100px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #1a237e; text-align: center; border-bottom: 4px solid #1a237e; padding-bottom: 10px; }
+        h2 { color: #c62828; background: #fff; padding: 15px; border-right: 6px solid #c62828; margin-top: 40px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .explanation { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        pre { background: #263238; color: #eceff1; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 13px; direction: ltr; text-align: left; border: 1px solid #37474f; }
+        code { font-family: 'Consolas', monospace; }
+        .tech-tag { display: inline-block; background: #1565c0; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.8em; margin-bottom: 10px; }
+        nav { position: sticky; top: 0; background: white; padding: 10px; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; border-radius: 5px; }
+        nav a { margin-left: 15px; text-decoration: none; color: #1a237e; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>توثيق طبقة البيانات (Data Repositories) - مشروع TeachMeApp</h1>
+
+    <nav>
+        <strong>انتقال سريع:</strong>
+        <a href="#auth">AuthRepository</a>
+        <a href="#user">UserRepository</a>
+        <a href="#lesson">LessonRepository</a>
+        <a href="#profile">ProfileRepository</a>
+    </nav>
+
+    <!-- 1. AuthRepository -->
+    <h2 id="auth">1. مستودع المصادقة (AuthRepository)</h2>
+    <div class="explanation">
+        هذا الكلاس هو الواجهة الأساسية لعمليات الدخول والتسجيل. وظيفته الأساسية هي تلقي الطلبات من واجهات المستخدم (مثل شاشة تسجيل الدخول) وتمريرها إلى <code>UserRepository</code>، مع ضمان عودة النتائج إلى "الخيط الرئيسي" (Main Thread) لتحديث الواجهة بأمان.
+    </div>
+    <pre><code>
+public class AuthRepository {
+    // تسجيل الدخول بالبريد وكلمة المرور
+    public void login(String email, String password, AuthCallback callback) {
+        userRepository.loginUser(email, password, result -> {
+            // إرجاع النتيجة للواجهة بشكل آمن
+            mainHandler.post(() -> callback.onResult(result));
+        });
+    }
+
+    // تسجيل حساب جديد
+    public void register(String role, String fullName, ...) {
+        User user = new User(email, password, fullName, role);
+        userRepository.registerUser(user, photoUri, result -> {
+            mainHandler.post(() -> callback.onResult(result));
+        });
+    }
+}
+    </code></pre>
+
+    <!-- 2. UserRepository -->
+    <h2 id="user">2. مستودع المستخدمين (UserRepository)</h2>
+    <div class="explanation">
+        هذا هو المحرك المسؤول عن إدارة بيانات المستخدمين في قاعدة بيانات <b>Appwrite</b>. يقوم بالمهام التالية:
+        <ul>
+            <li>إنشاء حسابات المستخدمين في نظام Appwrite Account.</li>
+            <li>حفظ بيانات المستخدم التفصيلية في جدول (Collection) يسمى <code>users</code>.</li>
+            <li>معالجة ورفع الصور الشخصية وتحديث روابطها.</li>
+            <li>جلب بيانات أي مستخدم عن طريق معرفه (ID).</li>
+        </ul>
+    </div>
+    <pre><code>
+public void registerUser(User user, Uri photoUri, AuthCallback callback) {
+    ioExecutor.execute(() -> {
+        // 1. إنشاء الحساب في Appwrite Authentication
+        dal.createDefaultUser(user.email, user.password, ...);
+
+        // 2. حفظ البيانات الإضافية في جدول الـ Users
+        persistUserRow(sessionUser);
+    });
+}
+
+public void updateUser(User user, Uri photoUri, AuthCallback callback) {
+    // منطق تحديث البيانات ورفع الصورة الجديدة
+    if (photoUri != null) {
+        dal.uploadFile(rawBytes, fileName, ...);
+    }
+    dal.patchDocumentData("users", null, user.id, dataMap);
+}
+    </code></pre>
+
+    <!-- 3. LessonRepository -->
+    <h2 id="lesson">3. مستودع الدروس (LessonRepository)</h2>
+    <div class="explanation">
+        مسؤول عن إدارة دورة حياة "الدرس" بالكامل. يتعامل مع جدولين في قاعدة البيانات: <code>lessons</code> و <code>lesson_enrollments</code>.
+        <ul>
+            <li><b>نشر الدروس:</b> إضافة درس جديد مع الموعد والسعر.</li>
+            <li><b>الطلبات:</b> معالجة طلبات الطلاب للانضمام (قيد الانتظار، قبول، رفض).</li>
+            <li><b>الجدول الزمني:</b> جلب قائمة الدروس "المقبولة" فقط لكل مستخدم ليعرضها في جدول مواعيده.</li>
+            <li><b>الإلغاء:</b> إلغاء الحصة بالكامل من قبل المعلم أو انسحاب الطالب.</li>
+        </ul>
+    </div>
+    <pre><code>
+public void publishLesson(String teacherId, String subject, ...) {
+    // التأكد من أن وقت الدرس في المستقبل
+    if (!isStartAtInFuture(startAtIso)) return;
+
+    // حفظ الدرس في قاعدة البيانات
+    dal.createDocumentWithData("lessons", null, docId, data);
+}
+
+public void setEnrollmentStatus(String enrollmentId, String newStatus, ...) {
+    // تغيير حالة الطلب (قبول أو رفض)
+    dal.patchDocumentData("lesson_enrollments", null, enrollmentId, patch);
+}
+    </code></pre>
+
+    <!-- 4. ProfileRepository -->
+    <h2 id="profile">4. مستودع الملف الشخصي (ProfileRepository)</h2>
+    <div class="explanation">
+        وحدة متخصصة في إدارة الملف الشخصي (Profile) بشكل مستقل. تُستخدم غالباً لتحديث البيانات الفرعية والصور الشخصية بشكل منفصل عن بيانات الحساب الأساسية.
+    </div>
+    <pre><code>
+public void getProfile(String userId, ProfileCallback callback) {
+    new Thread(() -> {
+        // جلب وثيقة الملف الشخصي بالمعرف
+        dal.getDataById("profiles", userId, null, UserProfile.class);
+    }).start();
+}
+
+public void updateProfile(UserProfile profile, Uri photoUri, ...) {
+    // رفع الصورة أولاً إذا وجدت، ثم تحديث البيانات
+    if (photoUri != null) {
+        dal.uploadFile(...);
+    }
+    dal.updateData(profile, "profiles", profile.userId, null);
+}
+    </code></pre>
+
+    <footer style="text-align: center; margin-top: 50px; color: #7f8c8d; font-size: 0.9em;">
+        تم استخراج وتوثيق طبقة البيانات لمشروع TeachMeApp.
+    </footer>
+
+</body>
+</html>
